@@ -42,18 +42,58 @@ var noa = new Engine(opts)
 
 // block materials (just colors for this demo)
 var textureURL = null // replace that with a filename to specify textures
-var brownish = [0.45, 0.36, 0.22]
-var greenish = [0.1, 0.8, 0.2]
-noa.registry.registerMaterial('dirt', brownish, textureURL)
-noa.registry.registerMaterial('grass', greenish, textureURL)
+// Material colors
+var bedrockColor = [0.2, 0.2, 0.2];
+var stoneColor = [0.5, 0.5, 0.5];
+var dirtColor = [0.45, 0.36, 0.22];
+var grassColor = [0.1, 0.8, 0.2];
+var sandColor = [0.9, 0.8, 0.6];
+var waterColor = [0.1, 0.5, 0.8];
+var clayColor = [0.7, 0.4, 0.3];
+var gravelColor = [0.6, 0.6, 0.6];
+var coalOreColor = [0.3, 0.3, 0.3];
+var ironOreColor = [0.6, 0.3, 0.1];
 
-// block types and their material names
-var dirtID = noa.registry.registerBlock(1, { material: 'dirt' })
-var grassID = noa.registry.registerBlock(2, { material: 'grass' })
+// Register materials
+noa.registry.registerMaterial("bedrock", bedrockColor, textureURL);
+noa.registry.registerMaterial("stone", stoneColor, textureURL);
+noa.registry.registerMaterial("dirt", dirtColor, textureURL);
+noa.registry.registerMaterial("grass", grassColor, textureURL);
+noa.registry.registerMaterial("sand", sandColor, textureURL);
+noa.registry.registerMaterial("water", waterColor, textureURL);
+noa.registry.registerMaterial("clay", clayColor, textureURL);
+noa.registry.registerMaterial("gravel", gravelColor, textureURL);
+noa.registry.registerMaterial("coalOre", coalOreColor, textureURL);
+noa.registry.registerMaterial("ironOre", ironOreColor, textureURL);
 
+// Block types and their material names
+var bedrockID = noa.registry.registerBlock(1, { material: "bedrock" });
+var stoneID = noa.registry.registerBlock(2, { material: "stone" });
+var dirtID = noa.registry.registerBlock(3, { material: "dirt" });
+var grassID = noa.registry.registerBlock(4, { material: "grass" });
+var sandID = noa.registry.registerBlock(5, { material: "sand" });
+var waterID = noa.registry.registerBlock(6, { material: "water" });
+var clayID = noa.registry.registerBlock(7, { material: "clay" });
+var gravelID = noa.registry.registerBlock(8, { material: "gravel" });
+var coalOreID = noa.registry.registerBlock(9, { material: "coalOre" });
+var ironOreID = noa.registry.registerBlock(10, { material: "ironOre" });
 
+const materials = [
+    { min_height: -Infinity, max_height: -30, material: bedrockID, probability: 1 },
+    { min_height: -30, max_height: -5, material: stoneID, probability: 0.9 },
+    { min_height: -30, max_height: -5, material: coalOreID, probability: 0.1 },
+    { min_height: -5, max_height: -2, material: stoneID, probability: 0.9 },
+    { min_height: -5, max_height: -2, material: ironOreID, probability: 0.1 },
+    { min_height: -2, max_height: 0, material: dirtID, probability: 0.85 },
+    { min_height: -2, max_height: 0, material: clayID, probability: 0.15 },
+    { min_height: 0, max_height: 3, material: grassID, probability: 0.6 },
+    { min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
+    { min_height: 3, max_height: 6, material: waterID, probability: 1 },
+    { min_height: 6, max_height: 12, material: gravelID, probability: 1 },
+  ];
+  
 
-
+     
 /*
  * 
  *      World generation
@@ -65,15 +105,65 @@ var grassID = noa.registry.registerBlock(2, { material: 'grass' })
  *  (The latter can be done asynchronously.)
  * 
 */
+const { createNoise3D } = require('simplex-noise');
+    const noise3D = createNoise3D();
 
-// simple height map worldgen function
+function getMaterialByHeight(y) {
+        let availableMaterials = [];
+      
+        for (const material of materials) {
+          if (y >= material.min_height && y <= material.max_height) {
+            availableMaterials.push(material);
+          }
+        }
+      
+        if (availableMaterials.length === 0) {
+          return 0; // empty space
+        }
+      
+        let totalProbability = availableMaterials.reduce((sum, material) => sum + material.probability, 0);
+        let randomValue = Math.random() * totalProbability;
+      
+        for (const material of availableMaterials) {
+          if (randomValue < material.probability) {
+            return material.material;
+          }
+          randomValue -= material.probability;
+        }
+      
+        return 0; // empty space
+      }
+      
+
+      function getVoxelID(x, y, z) {
+       // var noise = new Noise(seed); // Initialize Perlin Noise with a seed value
+        var frequency = 0.1; // Adjust frequency for terrain smoothness
+        var heightScale = 20; // Scale the height values of the terrain
+        var heightOffset = 5; // Shift the terrain up or down
+      
+        var height = heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
+      
+        if (y < height) {
+          return getMaterialByHeight(y);
+        } else {
+          return 0; // empty space
+        }
+      }
+      
+/*// simple height map worldgen function
 function getVoxelID(x, y, z) {
-    if (y < -3) return dirtID
-    var height = 2 * Math.sin(x / 10) + 3 * Math.cos(z / 20)
-    if (y < height) return grassID
-    return 0 // signifying empty space
-}
-
+    //var height = 2 * Math.sin(x / 10) + 3 * Math.cos(z / 20);
+    
+    //console.log(noise3D(1,2,1));
+    var rez = 0;
+    if (y <  8) 
+     rez = ((1 + noise3D(x,y,z))/2*10).toFixed(0);
+    //else rez = 0;
+    return rez; 
+   
+  } */
+  
+  
 // register for world events
 noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
     // `id` - a unique string id for the chunk
