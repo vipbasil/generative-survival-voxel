@@ -24,6 +24,8 @@ var opts = {
     chunkSize: 32,
     chunkAddDistance: 2.5,
     chunkRemoveDistance: 3.5,
+    texturePath: 'textures/',
+    //texturePath: 'textures/',
     // See `test` example, or noa docs/source, for more options
 }
 var noa = new Engine(opts)
@@ -41,8 +43,10 @@ var noa = new Engine(opts)
 */
 
 // block materials (just colors for this demo)
-var textureURL = null // replace that with a filename to specify textures
+var textureURL = null;//null "./textures/dirt.png" // replace that with a filename to specify textures
 // Material colors
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+
 var bedrockColor = [0.2, 0.2, 0.2];
 var stoneColor = [0.5, 0.5, 0.5];
 var dirtColor = [0.45, 0.36, 0.22];
@@ -54,15 +58,21 @@ var gravelColor = [0.6, 0.6, 0.6];
 var coalOreColor = [0.3, 0.3, 0.3];
 var ironOreColor = [0.6, 0.3, 0.1];
 
+/*var shinyMat = noa.rendering.makeStandardMaterial('dirt');
+    shinyMat.specularColor.copyFromFloats(1, 1, 1);
+    shinyMat.specularPower = 32;
+    shinyMat.bumpTexture = new Texture('textures/stone.png', scene);
+    noa.registry.registerMaterial('dirt', brownish, null, false, shinyMat);
+*/
 // Register materials
-noa.registry.registerMaterial("bedrock", bedrockColor, textureURL);
+noa.registry.registerMaterial("bedrock", bedrockColor, null);
 noa.registry.registerMaterial("stone", stoneColor, textureURL);
 noa.registry.registerMaterial("dirt", dirtColor, textureURL);
-noa.registry.registerMaterial("grass", grassColor, textureURL);
+noa.registry.registerMaterial("grass", grassColor, "grass5.png");
 noa.registry.registerMaterial("sand", sandColor, textureURL);
-noa.registry.registerMaterial("water", waterColor, textureURL);
+noa.registry.registerMaterial("water", waterColor, null);
 noa.registry.registerMaterial("clay", clayColor, textureURL);
-noa.registry.registerMaterial("gravel", gravelColor, textureURL);
+noa.registry.registerMaterial("gravel", gravelColor, null);
 noa.registry.registerMaterial("coalOre", coalOreColor, textureURL);
 noa.registry.registerMaterial("ironOre", ironOreColor, textureURL);
 
@@ -84,12 +94,12 @@ const materials = [
     { min_height: -30, max_height: -5, material: coalOreID, probability: 0.1 },
     { min_height: -5, max_height: -2, material: stoneID, probability: 0.9 },
     { min_height: -5, max_height: -2, material: ironOreID, probability: 0.1 },
-    { min_height: -2, max_height: 0, material: dirtID, probability: 0.85 },
-    { min_height: -2, max_height: 0, material: clayID, probability: 0.15 },
-    { min_height: 0, max_height: 3, material: grassID, probability: 0.6 },
-    { min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
+    { min_height: -2, max_height: 0, material: dirtID, probability: 1 },
+    { min_height: -2, max_height: 0, material: clayID, probability: 1 },
+    { min_height: 0, max_height: 1, material: grassID, probability: 1 },
+    /*{ min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
     { min_height: 3, max_height: 6, material: waterID, probability: 1 },
-    { min_height: 6, max_height: 12, material: gravelID, probability: 1 },
+    { min_height: 6, max_height: 12, material: gravelID, probability: 1 },*/
   ];
   
 
