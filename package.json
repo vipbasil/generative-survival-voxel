@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@babylonjs/core": "^5.0.0-alpha.62",
+    "axios": "^1.3.6",
     "noa-engine": "^0.32.0",
     "simplex-noise": "^4.0.1",
     "voxel-crunch": "^0.2.1"

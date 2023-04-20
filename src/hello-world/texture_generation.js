@@ -1,7 +1,5 @@
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-const base64Img = require('base64-img');
+
 
 function generate_texture(prompt){
 const url = 'https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img';//https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://localhost:7860/sdapi/v1/txt2img
@@ -47,6 +45,7 @@ const payload = {
   sampler_index: "Euler"
 };
     payload.prompt = prompt;
+    console.log(payload.prompt);
 axios.post(url, payload, { headers })
   .then(response => {
     const images = response.data.images;
@@ -78,3 +77,4 @@ axios.post(url, payload, { headers })
   return imgPath;
 
 }
+
