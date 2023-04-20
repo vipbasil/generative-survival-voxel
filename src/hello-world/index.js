@@ -316,10 +316,10 @@ axios.post(url, payload, { headers })
     images.forEach((imgStr, index) => {
       const imgData = imgStr.split(",")[1];
       const imgBuffer = Buffer.from(imgData, 'base64');
-      //const imgPath = path.join(__dirname, "output${index}.png");
+      const imgPath = path.join(__dirname, "output${index}.png");
       sharp(imgBuffer)
         .resize(32, 32)
-        .toFile(path.join(__dirname, "grass.png"), (err, info) => {
+        .toFile(path.join(__dirname, imgPath), (err, info) => {
           if (err) {
             console.error("Error saving image ");
           } else {
@@ -331,7 +331,7 @@ axios.post(url, payload, { headers })
 
 
 
-      console.log("Image  saved }");
+      console.log("Image  saved ");
     });
   })
   .catch(error => {
