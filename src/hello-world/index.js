@@ -13,7 +13,7 @@
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
-
+import {generate_texture} from './texture_generation.js'
 // or import from local filesystem when hacking locally:
 // import { Engine } from '../../../noa'
 
@@ -30,7 +30,7 @@ var opts = {
 }
 var noa = new Engine(opts)
 
-
+generate_texture("grass");
 
 /*
  *

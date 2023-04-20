@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const base64Img = require('base64-img');
 
-const url = 'http://localhost:7860/sdapi/v1/txt2img';
+function generate_texture(prompt){
+const url = 'https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img';//https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://localhost:7860/sdapi/v1/txt2img
 const headers = {
   'accept': 'application/json',
   'Content-Type': 'application/json'
@@ -18,7 +19,7 @@ const payload = {
   hr_second_pass_steps: 0,
   hr_resize_x: 0,
   hr_resize_y: 0,
-  prompt: "grass",
+  prompt: "$prompt",
   styles: [""],
   seed: -1,
   subseed: -1,
@@ -45,7 +46,7 @@ const payload = {
   script_args: [],
   sampler_index: "Euler"
 };
-
+    payload.prompt = prompt;
 axios.post(url, payload, { headers })
   .then(response => {
     const images = response.data.images;
@@ -53,7 +54,20 @@ axios.post(url, payload, { headers })
       const imgData = imgStr.split(",")[1];
       const imgBuffer = Buffer.from(imgData, 'base64');
       const imgPath = path.join(__dirname, `output${index}.png`);
-      base64Img.imgSync(imgBuffer, imgPath);
+      sharp(imgBuffer)
+        .resize(32, 32)
+        .toFile(path.join(__dirname, `output${index}.png`), (err, info) => {
+          if (err) {
+            console.error(`Error saving image ${index}: ${err.message}`);
+          } else {
+            console.log(`Image ${index} saved to ${info.path}`);
+          }
+        });
+      
+
+
+
+
       console.log(`Image ${index} saved to ${imgPath}`);
     });
   })
@@ -61,5 +75,6 @@ axios.post(url, payload, { headers })
     console.error(`Error: ${error.message}`);
   });
 
+  return imgPath;
 
-
+}
