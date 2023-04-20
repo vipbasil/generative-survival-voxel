@@ -197,7 +197,7 @@ noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
  *      Create a mesh to represent the player:
  * 
 */
-
+ 
 // get the player entity's ID and other info (position, size, ..)
 var player = noa.playerEntity
 var dat = noa.entities.getPositionData(player)
