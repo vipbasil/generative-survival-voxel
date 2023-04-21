@@ -9,12 +9,25 @@
  * 
 */
 
+/*var cors = require('cors')
+var app = express()
 
+app.use(cors())
+/**
+app.get('/products/:id', function (req, res, next) {
+  res.json({msg: 'This is CORS-enabled for all origins!'})
+})
+
+app.listen(80, function () {
+  console.log('CORS-enabled web server listening on port 80')
+}) */
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
+//import {util} from "util"
 //import {generate_texture} from './texture_generation.js'
 const axios = require('axios');
+//const sharp = require('sharp');
 //console.log("hello world");
 
 var opts = {
@@ -224,7 +237,7 @@ noa.entities.addComponent(player, noa.entities.names.mesh, {
     // mesh registered at the center of the box
     offset: [0, h / 2, 0],
 })
-
+ 
 
 
 /*
@@ -267,7 +280,7 @@ noa.on('tick', function (dt) {
 
 function generate_texture(prompt){
 const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
-//console.log(url);
+console.log(url);
 //https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://192.168.10.124:7860/sdapi/v1/txt2img
 const headers = {
   'accept': 'application/json',
@@ -312,33 +325,39 @@ const payload = {
   
 };
     payload.prompt = prompt;
-    console.log(payload.prompt);
-axios.post(url, payload, { headers })
+    console.log(prompt);
+
+
+
+  axios.post(url, payload, { headers })
   .then(response => {
     const images = response.data.images;
-    images.forEach((imgStr, index) => {
-      const imgData = imgStr.split(",")[1];
+    
+    images.forEach(
+      (imgStr) => {
+       
+      //const imgData = imgStr.split(",")[0];
+      const imgData = imgStr;
       const imgBuffer = Buffer.from(imgData, 'base64');
-      const imgPath = path.join(__dirname, "output${index}.png");
+      console.log("111111");
+      const imgPath = "outputgrass.png";//path.join(__dirname, "outputgrass.png");
+      console.log(imgPath);
+      console.log("2222222");
       sharp(imgBuffer)
         .resize(32, 32)
-        .toFile(path.join(__dirname, imgPath), (err, info) => {
+        .toFile( imgPath, (err, info) => {
           if (err) {
             console.error("Error saving image ");
           } else {
             console.log("Image saved ");
           }
         });
-      
-
-
-
-
-      console.log("Image  saved ");
-    });
+        console.log("Image  saved ");
+}
+);
   })
   .catch(error => {
-    console.error("Error: ${error.message}");
+    console.error(error.message);
   });
 
   

@@ -26,8 +26,14 @@
   "dependencies": {
     "@babylonjs/core": "^5.0.0-alpha.62",
     "axios": "^1.3.6",
+    "buffer": "^6.0.3",
+    "cors": "^2.8.5",
+    "fs": "^0.0.1-security",
     "noa-engine": "^0.32.0",
+    "sharp": "^0.32.0",
     "simplex-noise": "^4.0.1",
+    "util": "^0.12.5",
+    "utill": "^0.1.3",
     "voxel-crunch": "^0.2.1"
   },
   "devDependencies": {
