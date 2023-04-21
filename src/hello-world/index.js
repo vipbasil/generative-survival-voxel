@@ -266,7 +266,8 @@ noa.on('tick', function (dt) {
 
 
 function generate_texture(prompt){
-const url = 'https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img';//https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://localhost:7860/sdapi/v1/txt2img
+const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
+//https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://192.168.10.124:7860/sdapi/v1/txt2img
 const headers = {
   'accept': 'application/json',
   'Content-Type': 'application/json'
