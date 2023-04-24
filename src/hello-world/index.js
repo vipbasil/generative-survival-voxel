@@ -9,26 +9,13 @@
  * 
 */
 
-/*var cors = require('cors')
-var app = express()
-
-app.use(cors())
-/**
-app.get('/products/:id', function (req, res, next) {
-  res.json({msg: 'This is CORS-enabled for all origins!'})
-})
-
-app.listen(80, function () {
-  console.log('CORS-enabled web server listening on port 80')
-}) */
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
+//var base64Img = require('base64-img');
 //import {util} from "util"
 //import {generate_texture} from './texture_generation.js'
 const axios = require('axios');
-//const sharp = require('sharp');
-//console.log("hello world");
 
 var opts = {
     debug: true,

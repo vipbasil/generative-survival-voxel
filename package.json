@@ -26,10 +26,13 @@
   "dependencies": {
     "@babylonjs/core": "^5.0.0-alpha.62",
     "axios": "^1.3.6",
+    "base64-img": "^1.0.1",
     "buffer": "^6.0.3",
     "cors": "^2.8.5",
     "fs": "^0.0.1-security",
+    "install": "^0.13.0",
     "noa-engine": "^0.32.0",
+    "npm": "^9.6.5",
     "sharp": "^0.32.0",
     "simplex-noise": "^4.0.1",
     "util": "^0.12.5",
