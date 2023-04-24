@@ -12,7 +12,9 @@
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
-//var base64Img = require('base64-img');
+import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+
+import { Resizer } from "@babylonjs/controls/resizer"; //var base64Img = require('base64-img');
 //import {util} from "util"
 //import {generate_texture} from './texture_generation.js'
 const axios = require('axios');
@@ -27,8 +29,8 @@ var opts = {
   
 }
 var noa = new Engine(opts)
+const resizer = new Resizer();
 
-generate_texture("grass");
 
 /*
  *
@@ -43,7 +45,7 @@ generate_texture("grass");
 // block materials (just colors for this demo)
 var textureURL = null;//null "./textures/dirt.png" // replace that with a filename to specify textures
 // Material colors
-import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+
 
 var bedrockColor = [0.2, 0.2, 0.2];
 var stoneColor = [0.5, 0.5, 0.5];
@@ -63,10 +65,25 @@ var ironOreColor = [0.6, 0.3, 0.1];
     noa.registry.registerMaterial('dirt', brownish, null, false, shinyMat);
 */
 // Register materials
+var imggrass = generate_texture("grass");
+
+const texture = resizer.getResizedTexture(imggrass, { width: 32, height: 32 });
+// do some Babylon.js stuff with the scene, materials, etc.
+var scene = noa.rendering.getScene()
+
+// register a block material with a transparent texture
+// noa.registry.registerMaterial('window', brownish, 'window.png', true)
+
+var tmat = noa.rendering.makeStandardMaterial('')
+tmat.diffuseTexture = new Texture(imggrass, scene)
+tmat.opacityTexture = tmat.diffuseTexture;
+//
+noa.registry.registerMaterial('grass', null, null, false, tmat)
+
 noa.registry.registerMaterial("bedrock", bedrockColor, null);
 noa.registry.registerMaterial("stone", stoneColor, textureURL);
 noa.registry.registerMaterial("dirt", dirtColor, textureURL);
-noa.registry.registerMaterial("grass", grassColor, "grass5.png");
+//noa.registry.registerMaterial("grass", grassColor, "grass5.png");
 noa.registry.registerMaterial("sand", sandColor, textureURL);
 noa.registry.registerMaterial("water", waterColor, null);
 noa.registry.registerMaterial("clay", clayColor, textureURL);
@@ -326,20 +343,9 @@ const payload = {
       //const imgData = imgStr.split(",")[0];
       const imgData = imgStr;
       const imgBuffer = Buffer.from(imgData, 'base64');
-      console.log("111111");
-      const imgPath = "outputgrass.png";//path.join(__dirname, "outputgrass.png");
-      console.log(imgPath);
-      console.log("2222222");
-      sharp(imgBuffer)
-        .resize(32, 32)
-        .toFile( imgPath, (err, info) => {
-          if (err) {
-            console.error("Error saving image ");
-          } else {
-            console.log("Image saved ");
-          }
-        });
-        console.log("Image  saved ");
+      return imgBuffer;
+      
+      
 }
 );
   })
