@@ -7,6 +7,7 @@
  *  block, which specifies the materials for a given block type.
  * 
 */
+import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 const axios = require('axios');
 // block materials (just colors for this demo)
 var textureURL = null;
@@ -24,12 +25,13 @@ var gravelColor = [0.6, 0.6, 0.6];
 var coalOreColor = [0.3, 0.3, 0.3];
 var ironOreColor = [0.6, 0.3, 0.1];
 
+export var materials = [];
 
 // Register materials
 var imggrass = generate_texture("grass");
 //var imggrass = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAAzXRFWHRwYXJhbWV0ZXJzAGdyYXNzClN0ZXBzOiA1MCwgU2FtcGxlcjogRXVsZXIgYSwgQ0ZHIHNjYWxlOiA";
 // do some Babylon.js stuff with the scene, materials, etc.
-function init_texture(noa) {
+export function init_texture(noa) {
 var scene = noa.rendering.getScene()
 
 // register a block material with a transparent texture
@@ -63,20 +65,20 @@ var clayID = noa.registry.registerBlock(7, { material: "clay" });
 var gravelID = noa.registry.registerBlock(8, { material: "gravel" });
 var coalOreID = noa.registry.registerBlock(9, { material: "coalOre" });
 var ironOreID = noa.registry.registerBlock(10, { material: "ironOre" });
+materials = [
+  { min_height: -Infinity, max_height: -30, material: bedrockID, probability: 1 },
+  { min_height: -30, max_height: -5, material: stoneID, probability: 0.9 },
+  { min_height: -30, max_height: -5, material: coalOreID, probability: 0.1 },
+  { min_height: -5, max_height: -2, material: stoneID, probability: 0.9 },
+  { min_height: -5, max_height: -2, material: ironOreID, probability: 0.1 },
+  { min_height: -2, max_height: 0, material: dirtID, probability: 1 },
+  { min_height: -2, max_height: 0, material: clayID, probability: 1 },
+  { min_height: 0, max_height: 1, material: grassID, probability: 1 },
+  /*{ min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
+  { min_height: 3, max_height: 6, material: waterID, probability: 1 },
+  { min_height: 6, max_height: 12, material: gravelID, probability: 1 },*/
+];
 
-const materials = [
-    { min_height: -Infinity, max_height: -30, material: bedrockID, probability: 1 },
-    { min_height: -30, max_height: -5, material: stoneID, probability: 0.9 },
-    { min_height: -30, max_height: -5, material: coalOreID, probability: 0.1 },
-    { min_height: -5, max_height: -2, material: stoneID, probability: 0.9 },
-    { min_height: -5, max_height: -2, material: ironOreID, probability: 0.1 },
-    { min_height: -2, max_height: 0, material: dirtID, probability: 1 },
-    { min_height: -2, max_height: 0, material: clayID, probability: 1 },
-    { min_height: 0, max_height: 1, material: grassID, probability: 1 },
-    /*{ min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
-    { min_height: 3, max_height: 6, material: waterID, probability: 1 },
-    { min_height: 6, max_height: 12, material: gravelID, probability: 1 },*/
-  ];
 }
   function generate_texture(prompt){
     const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
