@@ -7,7 +7,7 @@
  *  block, which specifies the materials for a given block type.
  * 
 */
-
+const axios = require('axios');
 // block materials (just colors for this demo)
 var textureURL = null;
 // Material colors
@@ -16,7 +16,7 @@ var textureURL = null;
 var bedrockColor = [0.2, 0.2, 0.2];
 var stoneColor = [0.5, 0.5, 0.5];
 var dirtColor = [0.45, 0.36, 0.22];
-var grassColor = [0.1, 0.8, 0.2];
+//var grassColor = [0.1, 0.8, 0.2];
 var sandColor = [0.9, 0.8, 0.6];
 var waterColor = [0.1, 0.5, 0.8];
 var clayColor = [0.7, 0.4, 0.3];
@@ -24,16 +24,12 @@ var gravelColor = [0.6, 0.6, 0.6];
 var coalOreColor = [0.3, 0.3, 0.3];
 var ironOreColor = [0.6, 0.3, 0.1];
 
-/*var shinyMat = noa.rendering.makeStandardMaterial('dirt');
-    shinyMat.specularColor.copyFromFloats(1, 1, 1);
-    shinyMat.specularPower = 32;
-    shinyMat.bumpTexture = new Texture('textures/stone.png', scene);
-    noa.registry.registerMaterial('dirt', brownish, null, false, shinyMat);
-*/
+
 // Register materials
 var imggrass = generate_texture("grass");
 //var imggrass = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAAzXRFWHRwYXJhbWV0ZXJzAGdyYXNzClN0ZXBzOiA1MCwgU2FtcGxlcjogRXVsZXIgYSwgQ0ZHIHNjYWxlOiA";
 // do some Babylon.js stuff with the scene, materials, etc.
+function init_texture(noa) {
 var scene = noa.rendering.getScene()
 
 // register a block material with a transparent texture
@@ -81,4 +77,80 @@ const materials = [
     { min_height: 3, max_height: 6, material: waterID, probability: 1 },
     { min_height: 6, max_height: 12, material: gravelID, probability: 1 },*/
   ];
-  
+}
+  function generate_texture(prompt){
+    const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
+    console.log(url);
+    //https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://192.168.10.124:7860/sdapi/v1/txt2img
+    const headers = {
+      'accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
+    const payload = {
+      
+        "enable_hr": "true",
+        "denoising_strength": 0,
+        "firstphase_width": 0,
+        "firstphase_height": 0,
+        "hr_scale": 2,
+        "hr_upscaler": "Nearest",
+        "hr_second_pass_steps": 0,
+        "hr_resize_x": 32,
+        "hr_resize_y": 32,
+        "prompt": "grass",
+        "seed": -1,
+        "subseed": -1,
+        "subseed_strength": 0,
+        "seed_resize_from_h": -1,
+        "seed_resize_from_w": -1,
+        "sampler_name": "Euler a",
+        "batch_size": 1,
+        "n_iter": 1,
+        "steps": 50,
+        "cfg_scale": 7,
+        "width": 512,
+        "height": 512,
+        "restore_faces": false,
+        "tiling": true,
+        "negative_prompt": "",
+        "eta": 0,
+        "s_churn": 0,
+        "s_tmax": 0,
+        "s_tmin": 0,
+        "s_noise": 1,
+        "override_settings": {},
+        "override_settings_restore_afterwards": true,
+        "sampler_index": "Euler"
+      
+      
+    };
+        payload.prompt = prompt;
+        console.log(prompt);
+    
+    
+    
+      axios.post(url, payload, { headers })
+      .then(response => {
+        const images = response.data.images;
+        
+        images.forEach(
+          (imgStr) => {
+           
+          //const imgData = imgStr.split(",")[0];
+          const imgData = imgStr;
+          const imgBuffer = Buffer.from(imgData, 'base64');
+          console.log(imgData);
+          return imgStr;
+          
+          
+          
+    }
+    );
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
+    
+      
+    
+    }
