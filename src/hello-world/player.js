@@ -3,6 +3,7 @@
 // add a mesh to represent the player, and scale it, etc.
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import '@babylonjs/core/Meshes/Builders/boxBuilder'
+import {materialIds} from './texture_generation'
 export function initPlayerMesh(noa){
 var player = noa.playerEntity
 var dat = noa.entities.getPositionData(player)
@@ -45,7 +46,7 @@ noa.inputs.down.on('fire', function () {
 noa.inputs.down.on('alt-fire', function () {
     if (noa.targetedBlock) {
         var pos = noa.targetedBlock.adjacent
-        noa.setBlock(grassID, pos[0], pos[1], pos[2])
+        noa.setBlock(materialIds['grass'], pos[0], pos[1], pos[2])
     }
 })
 

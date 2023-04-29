@@ -31,11 +31,12 @@ function getMaterialByHeight(y) {
 
       function getVoxelID(x, y, z) {
        // var noise = new Noise(seed); // Initialize Perlin Noise with a seed value
-        var frequency = 0.1; // Adjust frequency for terrain smoothness
+        var frequency = 0.2; // Adjust frequency for terrain smoothness
         var heightScale = 20; // Scale the height values of the terrain
         var heightOffset = 5; // Shift the terrain up or down
       
-        var height = heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
+        //var height = heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
+        var height =  noise3D(x * frequency,y * frequency,z * frequency)// + heightOffset;
       
         if (y < height) {
           return getMaterialByHeight(y);

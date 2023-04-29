@@ -42,7 +42,7 @@ export function init_texture(noa) {
   create_material("gravel", noa);
   create_material("coalOre", noa);
   create_material("ironOre", noa);
-//temporrily materials created here
+//temporarily materials created here
 noa.registry.registerMaterial("bedrock", bedrockColor, null);
 noa.registry.registerMaterial("stone", stoneColor, textureURL);
 noa.registry.registerMaterial("dirt", dirtColor, textureURL);
@@ -72,12 +72,12 @@ materials = [
   { min_height: -30, max_height: -5, material: materialIds["coalOre"], probability: 0.1 },
   { min_height: -5, max_height: -2, material: materialIds["stone"], probability: 0.9 },
   { min_height: -5, max_height: -2, material: materialIds["ironOre"], probability: 0.1 },
-  { min_height: -2, max_height: 0, material: materialIds["dirt"], probability: 1 },
-  { min_height: -2, max_height: 0, material: materialIds["clay"], probability: 1 },
-  { min_height: 0, max_height: 1, material: materialIds["grass"], probability: 1 },
-  { min_height: 0, max_height: 3, material: materialIds["sand"], probability: 0.4 },
-  { min_height: 3, max_height: 6, material: materialIds["water"], probability: 1 },
-  { min_height: 6, max_height: 12, material: materialIds["gravel"], probability: 1 }
+  { min_height: -2, max_height: -1, material: materialIds["dirt"], probability: 0.7 },
+  { min_height: -2, max_height: -1, material: materialIds["clay"], probability: 0.3 },
+  { min_height: 0, max_height: 3, material: materialIds["grass"], probability: 0.98 },
+  //{ min_height: 0, max_height: 3, material: materialIds["sand"], probability: 0.2 },
+  { min_height: -30, max_height: 3, material: materialIds["water"], probability: 0.01 },
+  { min_height: -30, max_height: 3, material: materialIds["gravel"], probability: 0.01 }
 ];
 
 }
