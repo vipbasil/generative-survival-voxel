@@ -9,7 +9,7 @@ import { Engine } from 'noa-engine'
 import {init_texture, materials} from './texture_generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
-//explain   
+//explain      
 var opts = {
     debug: true,
     showFPS: true,

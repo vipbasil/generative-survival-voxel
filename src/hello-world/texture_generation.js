@@ -17,7 +17,7 @@ var textureURL = null;
 var bedrockColor = [0.2, 0.2, 0.2];
 var stoneColor = [0.5, 0.5, 0.5];
 var dirtColor = [0.45, 0.36, 0.22];
-//var grassColor = [0.1, 0.8, 0.2];
+var grassColor = [0.1, 0.8, 0.2];
 var sandColor = [0.9, 0.8, 0.6];
 var waterColor = [0.1, 0.5, 0.8];
 var clayColor = [0.7, 0.4, 0.3];
@@ -28,25 +28,16 @@ var ironOreColor = [0.6, 0.3, 0.1];
 export var materials = [];
 
 // Register materials
-var imggrass = generate_texture("grass");
+
 //var imggrass = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAAzXRFWHRwYXJhbWV0ZXJzAGdyYXNzClN0ZXBzOiA1MCwgU2FtcGxlcjogRXVsZXIgYSwgQ0ZHIHNjYWxlOiA";
 // do some Babylon.js stuff with the scene, materials, etc.
 export function init_texture(noa) {
-var scene = noa.rendering.getScene()
 
-// register a block material with a transparent texture
-// noa.registry.registerMaterial('window', brownish, 'window.png', true)
-
-var tmat = noa.rendering.makeStandardMaterial('')
-tmat.diffuseTexture = new Texture(imggrass, scene)
-tmat.opacityTexture = tmat.diffuseTexture;
-//
-noa.registry.registerMaterial('grass', null, null, false, tmat)
-
+  generate_texture("grass", noa);
 noa.registry.registerMaterial("bedrock", bedrockColor, null);
 noa.registry.registerMaterial("stone", stoneColor, textureURL);
 noa.registry.registerMaterial("dirt", dirtColor, textureURL);
-//noa.registry.registerMaterial("grass", grassColor, "grass5.png");
+noa.registry.registerMaterial("grass", grassColor, null);
 noa.registry.registerMaterial("sand", sandColor, textureURL);
 noa.registry.registerMaterial("water", waterColor, null);
 noa.registry.registerMaterial("clay", clayColor, textureURL);
@@ -80,7 +71,7 @@ materials = [
 ];
 
 }
-  function generate_texture(prompt){
+  function generate_texture(prompt, noa ){
     const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
     console.log(url);
     //https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://192.168.10.124:7860/sdapi/v1/txt2img
@@ -142,6 +133,14 @@ materials = [
           const imgData = imgStr;
           const imgBuffer = Buffer.from(imgData, 'base64');
           console.log(imgData);
+          var scene = noa.rendering.getScene()
+
+
+        var tmat = noa.rendering.makeStandardMaterial('')
+        tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
+        tmat.opacityTexture = tmat.diffuseTexture;
+
+        noa.registry.registerMaterial('grass', null, null, false, tmat)
           return imgStr;
           
           
