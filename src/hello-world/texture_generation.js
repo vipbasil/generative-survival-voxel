@@ -26,14 +26,23 @@ var coalOreColor = [0.3, 0.3, 0.3];
 var ironOreColor = [0.6, 0.3, 0.1];
 
 export var materials = [];
-
+export var materialIds = [];
 // Register materials
 
-//var imggrass = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAAzXRFWHRwYXJhbWV0ZXJzAGdyYXNzClN0ZXBzOiA1MCwgU2FtcGxlcjogRXVsZXIgYSwgQ0ZHIHNjYWxlOiA";
 // do some Babylon.js stuff with the scene, materials, etc.
 export function init_texture(noa) {
 
-  generate_texture("grass", noa);
+  create_material("grass", noa);
+  create_material("bedrock", noa);
+  create_material("stone", noa);
+  create_material("dirt", noa);
+  create_material("sand", noa);
+  create_material("water", noa);
+  create_material("clay", noa);
+  create_material("gravel", noa);
+  create_material("coalOre", noa);
+  create_material("ironOre", noa);
+//temporrily materials created here
 noa.registry.registerMaterial("bedrock", bedrockColor, null);
 noa.registry.registerMaterial("stone", stoneColor, textureURL);
 noa.registry.registerMaterial("dirt", dirtColor, textureURL);
@@ -46,36 +55,35 @@ noa.registry.registerMaterial("coalOre", coalOreColor, textureURL);
 noa.registry.registerMaterial("ironOre", ironOreColor, textureURL);
 
 // Block types and their material names
-var bedrockID = noa.registry.registerBlock(1, { material: "bedrock" });
-var stoneID = noa.registry.registerBlock(2, { material: "stone" });
-var dirtID = noa.registry.registerBlock(3, { material: "dirt" });
-var grassID = noa.registry.registerBlock(4, { material: "grass" });
-var sandID = noa.registry.registerBlock(5, { material: "sand" });
-var waterID = noa.registry.registerBlock(6, { material: "water" });
-var clayID = noa.registry.registerBlock(7, { material: "clay" });
-var gravelID = noa.registry.registerBlock(8, { material: "gravel" });
-var coalOreID = noa.registry.registerBlock(9, { material: "coalOre" });
-var ironOreID = noa.registry.registerBlock(10, { material: "ironOre" });
+materialIds["bedrock"] = noa.registry.registerBlock(1, { material: "bedrock" });
+materialIds["stone"] = noa.registry.registerBlock(2, { material: "stone" });
+materialIds["dirt"]= noa.registry.registerBlock(3, { material: "dirt" });
+materialIds["grass"] = noa.registry.registerBlock(4, { material: "grass" });
+materialIds["sand"]= noa.registry.registerBlock(5, { material: "sand" });
+materialIds["water"] = noa.registry.registerBlock(6, { material: "water" });
+materialIds["clay"] = noa.registry.registerBlock(7, { material: "clay" });
+materialIds["gravel"] = noa.registry.registerBlock(8, { material: "gravel" });
+materialIds["coalOre"] = noa.registry.registerBlock(9, { material: "coalOre" });
+materialIds["ironOre"]= noa.registry.registerBlock(10, { material: "ironOre" });
+
 materials = [
-  { min_height: -Infinity, max_height: -30, material: bedrockID, probability: 1 },
-  { min_height: -30, max_height: -5, material: stoneID, probability: 0.9 },
-  { min_height: -30, max_height: -5, material: coalOreID, probability: 0.1 },
-  { min_height: -5, max_height: -2, material: stoneID, probability: 0.9 },
-  { min_height: -5, max_height: -2, material: ironOreID, probability: 0.1 },
-  { min_height: -2, max_height: 0, material: dirtID, probability: 1 },
-  { min_height: -2, max_height: 0, material: clayID, probability: 1 },
-  { min_height: 0, max_height: 1, material: grassID, probability: 1 },
-  /*{ min_height: 0, max_height: 3, material: sandID, probability: 0.4 },
-  { min_height: 3, max_height: 6, material: waterID, probability: 1 },
-  { min_height: 6, max_height: 12, material: gravelID, probability: 1 },*/
+  { min_height: -Infinity, max_height: -30, material: materialIds["bedrock"] , probability: 1 },
+  { min_height: -30, max_height: -5, material: materialIds["stone"], probability: 0.9 },
+  { min_height: -30, max_height: -5, material: materialIds["coalOre"], probability: 0.1 },
+  { min_height: -5, max_height: -2, material: materialIds["stone"], probability: 0.9 },
+  { min_height: -5, max_height: -2, material: materialIds["ironOre"], probability: 0.1 },
+  { min_height: -2, max_height: 0, material: materialIds["dirt"], probability: 1 },
+  { min_height: -2, max_height: 0, material: materialIds["clay"], probability: 1 },
+  { min_height: 0, max_height: 1, material: materialIds["grass"], probability: 1 },
+  { min_height: 0, max_height: 3, material: materialIds["sand"], probability: 0.4 },
+  { min_height: 3, max_height: 6, material: materialIds["water"], probability: 1 },
+  { min_height: 6, max_height: 12, material: materialIds["gravel"], probability: 1 }
 ];
 
 }
-  function generate_texture(prompt, noa ){
+  function create_material(prompt, noa ){
     const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
-    console.log(url);
-    //https://cb42ea6f-6dc9-4409.gradio.live/sdapi/v1/txt2img http://192.168.10.124:7860/sdapi/v1/txt2img
-    const headers = {
+     const headers = {
       'accept': 'application/json',
       'Content-Type': 'application/json'
     };
@@ -128,20 +136,17 @@ materials = [
         
         images.forEach(
           (imgStr) => {
-           
-          //const imgData = imgStr.split(",")[0];
           const imgData = imgStr;
           const imgBuffer = Buffer.from(imgData, 'base64');
-          console.log(imgData);
+
           var scene = noa.rendering.getScene()
 
 
         var tmat = noa.rendering.makeStandardMaterial('')
         tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
-        tmat.opacityTexture = tmat.diffuseTexture;
-
-        noa.registry.registerMaterial('grass', null, null, false, tmat)
-          return imgStr;
+        tmat.bumpTexture  = tmat.diffuseTexture;
+        noa.registry.registerMaterial(prompt, null, null, false, tmat)
+       
           
           
           
