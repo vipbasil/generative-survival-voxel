@@ -8,22 +8,14 @@
  * 
 */
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import { each } from 'utill';
 const axios = require('axios');
 // block materials (just colors for this demo)
 var textureURL = null;
 // Material colors
 
 
-var bedrockColor = [0.2, 0.2, 0.2];
-var stoneColor = [0.5, 0.5, 0.5];
-var dirtColor = [0.45, 0.36, 0.22];
-var grassColor = [0.1, 0.8, 0.2];
-var sandColor = [0.9, 0.8, 0.6];
-var waterColor = [0.1, 0.5, 0.8];
-var clayColor = [0.7, 0.4, 0.3];
-var gravelColor = [0.6, 0.6, 0.6];
-var coalOreColor = [0.3, 0.3, 0.3];
-var ironOreColor = [0.6, 0.3, 0.1];
+
 
 export var materials = [];
 export var materialIds = [];
@@ -32,41 +24,8 @@ export var materialIds = [];
 // do some Babylon.js stuff with the scene, materials, etc.
 export function init_texture(noa) {
 
-  create_material("grass", noa);
-  create_material("bedrock", noa);
-  create_material("stone", noa);
-  create_material("dirt", noa);
-  create_material("sand", noa);
-  create_material("water", noa);
-  create_material("clay", noa);
-  create_material("gravel", noa);
-  create_material("coalOre", noa);
-  create_material("ironOre", noa);
-//temporarily materials created here
-noa.registry.registerMaterial("bedrock", bedrockColor, null);
-noa.registry.registerMaterial("stone", stoneColor, textureURL);
-noa.registry.registerMaterial("dirt", dirtColor, textureURL);
-noa.registry.registerMaterial("grass", grassColor, null);
-noa.registry.registerMaterial("sand", sandColor, textureURL);
-noa.registry.registerMaterial("water", waterColor, null);
-noa.registry.registerMaterial("clay", clayColor, textureURL);
-noa.registry.registerMaterial("gravel", gravelColor, null);
-noa.registry.registerMaterial("coalOre", coalOreColor, textureURL);
-noa.registry.registerMaterial("ironOre", ironOreColor, textureURL);
-
-// Block types and their material names
-materialIds["bedrock"] = noa.registry.registerBlock(1, { material: "bedrock" });
-materialIds["stone"] = noa.registry.registerBlock(2, { material: "stone" });
-materialIds["dirt"]= noa.registry.registerBlock(3, { material: "dirt" });
-materialIds["grass"] = noa.registry.registerBlock(4, { material: "grass" });
-materialIds["sand"]= noa.registry.registerBlock(5, { material: "sand" });
-materialIds["water"] = noa.registry.registerBlock(6, { material: "water" });
-materialIds["clay"] = noa.registry.registerBlock(7, { material: "clay" });
-materialIds["gravel"] = noa.registry.registerBlock(8, { material: "gravel" });
-materialIds["coalOre"] = noa.registry.registerBlock(9, { material: "coalOre" });
-materialIds["ironOre"]= noa.registry.registerBlock(10, { material: "ironOre" });
-
-materials = [
+ 
+/*materials = [
   { min_height: -Infinity, max_height: -30, material: materialIds["bedrock"] , probability: 1 },
   { min_height: -30, max_height: -5, material: materialIds["stone"], probability: 0.9 },
   { min_height: -30, max_height: -5, material: materialIds["coalOre"], probability: 0.1 },
@@ -78,10 +37,35 @@ materials = [
   //{ min_height: 0, max_height: 3, material: materialIds["sand"], probability: 0.2 },
   { min_height: -30, max_height: 3, material: materialIds["water"], probability: 0.01 },
   { min_height: -30, max_height: 3, material: materialIds["gravel"], probability: 0.01 }
+]; */
+materials = [
+  { name: "Bedrock", min_height: -Infinity, max_height: -50,  materialIds:"bedrock", probability: 1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 100, color: [50, 50, 50], texture: "Dark gray, rough and jagged surface" } },
+  { name: "Stone", min_height: -50, max_height: -10,materialIds:"stone", probability: 0.8, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [120, 120, 120], texture: "Smooth gray surface with occasional darker flecks" } },
+  { name: "Coal Ore", min_height: -50, max_height: -10,  materialIds:"coalOre", probability: 0.15, properties: { transparency: 0, shining: 0, liquid: 0, durability: 30, color: [80, 80, 80], texture: "Gray surface with black coal veins" } },
+  { name: "Copper Ore", min_height: -50, max_height: -10,  materialIds:"copperOre", probability: 0.05, properties: { transparency: 0, shining: 0.2, liquid: 0, durability: 35, color: [184, 115, 51], texture: "Gray surface with small orange-brown copper specks" } },
+  { name: "Stone", min_height: -10, max_height: -3,  materialIds:"stone", probability: 0.85, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [120, 120, 120], texture: "Smooth gray surface with occasional darker flecks" } },
+  { name: "Iron Ore", min_height: -10, max_height: -3,  materialIds:"ironOre", probability: 0.1, properties: { transparency: 0, shining: 0.4, liquid: 0, durability: 45, color: [191, 191, 191], texture: "Gray surface with light gray iron veins" } },
+  { name: "Gold Ore", min_height: -10, max_height: -3,  materialIds:"goldOre", probability: 0.05, properties: { transparency: 0, shining: 0.8, liquid: 0, durability: 25, color: [255, 215, 0], texture: "Gray surface with shiny gold veins" } },
+  { name: "Dirt", min_height: -3, max_height: 0, materialIds:"dirt", probability: 0.7, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [139, 69, 19], texture: "Brown, compacted soil with small pebbles" } },
+  { name: "Clay", min_height: -3, max_height: 0,  materialIds:"clay", probability: 0.25, properties: { transparency: 0, shining: 0, liquid: 0, durability: 20, color: [210, 180, 140], texture: "Smooth, light brown surface with a slightly sticky feel" } },
+  { name: "Peat", min_height: -3, max_height: 0,  materialIds:"peat", probability: 0.05, properties: { transparency: 0, shining: 0, liquid: 0, durability: 15, color: [105, 84, 50], texture: "Dark brown, fibrous organic material with dampness" } },
+  { name: "Grass", min_height: 1, max_height: 5,  materialIds:"grass", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 5, color: [50, 205, 50], texture: "Green grass blades covering a layer of soil" } },
+  { name: "Sand", min_height: 1, max_height: 5, materialIds:"sand", probability: 0.1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [255, 255, 224], texture: "Loose, fine light-colored grains" } },
+  { name: "Water", min_height: -50, max_height: 5, materialIds:"water", probability: 0.02, properties: { transparency: 0.9, shining: 0.2, liquid: 1, durability: 0, color: [0, 0, 255], texture: "Transparent, flowing liquid with a reflective surface" } },
+  { name: "Gravel", min_height: -50, max_height: 5,  materialIds:"gravel", probability: 0.02, properties: { transparency: 0, shining: 0, liquid: 0, durability: 15, color: [112, 128, 144], texture: "Small, gray rounded rocks of various sizes" } },
+  { name: "Lava", min_height: -50, max_height: 5,  materialIds:"lava", probability: 0.005, properties: { transparency: 0.6, shining: 0.8, liquid: 1, durability: 0, color: [255, 69, 0], texture: "Fiery red-orange molten rock with visible heat waves" } }
 ];
 
+for (var i in materials) {
+    create_material(materials[i].materialIds,materials[i].properties.texture, noa); 
+    console.log(materials[i].properties.color);
+    noa.registry.registerMaterial(materials[i].materialIds, materials[i].properties.color, null);
+    materials[i].material = noa.registry.registerBlock(1+i, { material: materials[i].materialIds });
+    //console.log(i+":"+materials[i].material);
+    materialIds[materials[i].materialIds]= materials[i].material;
+  }
 }
-  function create_material(prompt, noa ){
+  function create_material(prompt, texture, noa ){
     const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
      const headers = {
       'accept': 'application/json',
@@ -125,11 +109,9 @@ materials = [
       
       
     };
-        payload.prompt = prompt;
-        console.log(prompt);
-    
-    
-    
+        payload.prompt = prompt+", "+texture;
+        //console.log(prompt);
+
       axios.post(url, payload, { headers })
       .then(response => {
         const images = response.data.images;
@@ -146,17 +128,12 @@ materials = [
         tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
         tmat.bumpTexture  = tmat.diffuseTexture;
         noa.registry.registerMaterial(prompt, null, null, false, tmat)
-       
-          
-          
-          
+     
     }
     );
       })
       .catch(error => {
         console.error(error.message);
       });
-    
-      
-    
+
     }
