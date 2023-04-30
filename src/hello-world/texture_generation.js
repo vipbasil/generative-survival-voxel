@@ -47,15 +47,14 @@ materials = [
 ];
 for (var i in materials) {
    
-    create_material(materials[i].materialIds, materials[i].properties.texture, noa); 
-    console.log(materials[i].name+" "+materials[i].properties.color);
+    
     noa.registry.registerMaterial(materials[i].materialIds, materials[i].properties.color, null);
-    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds });
-    console.log(i+":"+materials[i].material);
+    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, opaque : 1.0 - Number(materials[i].properties.transparency) });
     materialIds[materials[i].materialIds]= materials[i].material;
+    create_material(materials[i], noa); 
   }
 }
-  function create_material(prompt, texture, noa ){
+  function create_material(material, noa ){
     const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
      const headers = {
       'accept': 'application/json',
@@ -99,7 +98,7 @@ for (var i in materials) {
       
       
     };
-        payload.prompt = prompt+", "+texture;
+        payload.prompt = material.name+", "+material.properties.texture;
         //console.log(prompt);
 
       axios.post(url, payload, { headers })
@@ -109,15 +108,18 @@ for (var i in materials) {
         images.forEach(
           (imgStr) => {
           const imgData = imgStr;
-          const imgBuffer = Buffer.from(imgData, 'base64');
-
+          
           var scene = noa.rendering.getScene()
 
 
         var tmat = noa.rendering.makeStandardMaterial('')
         tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
-        tmat.bumpTexture  = tmat.diffuseTexture;
-        noa.registry.registerMaterial(prompt, null, null, false, tmat)
+        if(material.properties.transparency > 0){
+          tmat.opaqueTexture  = tmat.diffuseTexture; 
+          tmat.color = material.color;
+        } else{
+        tmat.bumpTexture  = tmat.diffuseTexture;}
+        noa.registry.registerMaterial(material.materialIds, null, null, false, tmat)
      
     }
     );
