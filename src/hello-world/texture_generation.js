@@ -39,29 +39,19 @@ export function init_texture(noa) {
   { min_height: -30, max_height: 3, material: materialIds["gravel"], probability: 0.01 }
 ]; */
 materials = [
-  { name: "Bedrock", min_height: -Infinity, max_height: -50,  materialIds:"bedrock", probability: 1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 100, color: [50, 50, 50], texture: "Dark gray, rough and jagged surface" } },
-  { name: "Stone", min_height: -50, max_height: -10,materialIds:"stone", probability: 0.8, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [120, 120, 120], texture: "Smooth gray surface with occasional darker flecks" } },
-  { name: "Coal Ore", min_height: -50, max_height: -10,  materialIds:"coalOre", probability: 0.15, properties: { transparency: 0, shining: 0, liquid: 0, durability: 30, color: [80, 80, 80], texture: "Gray surface with black coal veins" } },
-  { name: "Copper Ore", min_height: -50, max_height: -10,  materialIds:"copperOre", probability: 0.05, properties: { transparency: 0, shining: 0.2, liquid: 0, durability: 35, color: [184, 115, 51], texture: "Gray surface with small orange-brown copper specks" } },
-  { name: "Stone", min_height: -10, max_height: -3,  materialIds:"stone", probability: 0.85, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [120, 120, 120], texture: "Smooth gray surface with occasional darker flecks" } },
-  { name: "Iron Ore", min_height: -10, max_height: -3,  materialIds:"ironOre", probability: 0.1, properties: { transparency: 0, shining: 0.4, liquid: 0, durability: 45, color: [191, 191, 191], texture: "Gray surface with light gray iron veins" } },
-  { name: "Gold Ore", min_height: -10, max_height: -3,  materialIds:"goldOre", probability: 0.05, properties: { transparency: 0, shining: 0.8, liquid: 0, durability: 25, color: [255, 215, 0], texture: "Gray surface with shiny gold veins" } },
-  { name: "Dirt", min_height: -3, max_height: 0, materialIds:"dirt", probability: 0.7, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [139, 69, 19], texture: "Brown, compacted soil with small pebbles" } },
-  { name: "Clay", min_height: -3, max_height: 0,  materialIds:"clay", probability: 0.25, properties: { transparency: 0, shining: 0, liquid: 0, durability: 20, color: [210, 180, 140], texture: "Smooth, light brown surface with a slightly sticky feel" } },
-  { name: "Peat", min_height: -3, max_height: 0,  materialIds:"peat", probability: 0.05, properties: { transparency: 0, shining: 0, liquid: 0, durability: 15, color: [105, 84, 50], texture: "Dark brown, fibrous organic material with dampness" } },
-  { name: "Grass", min_height: 1, max_height: 5,  materialIds:"grass", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 5, color: [50, 205, 50], texture: "Green grass blades covering a layer of soil" } },
-  { name: "Sand", min_height: 1, max_height: 5, materialIds:"sand", probability: 0.1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [255, 255, 224], texture: "Loose, fine light-colored grains" } },
-  { name: "Water", min_height: -50, max_height: 5, materialIds:"water", probability: 0.02, properties: { transparency: 0.9, shining: 0.2, liquid: 1, durability: 0, color: [0, 0, 255], texture: "Transparent, flowing liquid with a reflective surface" } },
-  { name: "Gravel", min_height: -50, max_height: 5,  materialIds:"gravel", probability: 0.02, properties: { transparency: 0, shining: 0, liquid: 0, durability: 15, color: [112, 128, 144], texture: "Small, gray rounded rocks of various sizes" } },
-  { name: "Lava", min_height: -50, max_height: 5,  materialIds:"lava", probability: 0.005, properties: { transparency: 0.6, shining: 0.8, liquid: 1, durability: 0, color: [255, 69, 0], texture: "Fiery red-orange molten rock with visible heat waves" } }
+  { name: "Bedrock", min_height: -Infinity, max_height: -50, materialIds: "bedrock", probability: 1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 100, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" } },
+  { name: "Stone", min_height: -50, max_height: 0, materialIds: "stone", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" } },
+  { name: "Dirt", min_height: -5, max_height: 0, materialIds: "dirt", probability: 0.7, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" } },
+  { name: "Grass", min_height: 0, max_height: 5, materialIds: "grass", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 5, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" } },
+  { name: "Water", min_height: -50, max_height: 5, materialIds: "water", probability: 0.005, properties: { transparency: 0.9, shining: 0.2, liquid: 1, durability: 0, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" } }
 ];
-
 for (var i in materials) {
-    create_material(materials[i].materialIds,materials[i].properties.texture, noa); 
-    console.log(materials[i].properties.color);
+   
+    create_material(materials[i].materialIds, materials[i].properties.texture, noa); 
+    console.log(materials[i].name+" "+materials[i].properties.color);
     noa.registry.registerMaterial(materials[i].materialIds, materials[i].properties.color, null);
-    materials[i].material = noa.registry.registerBlock(1+i, { material: materials[i].materialIds });
-    //console.log(i+":"+materials[i].material);
+    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds });
+    console.log(i+":"+materials[i].material);
     materialIds[materials[i].materialIds]= materials[i].material;
   }
 }
