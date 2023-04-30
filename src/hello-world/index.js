@@ -16,7 +16,12 @@ var opts = {
     chunkSize: 32,
     chunkAddDistance: 2.5,
     chunkRemoveDistance: 3.5,
-    texturePath: 'textures/'
+    texturePath: 'textures/',
+    gravity: [0, -10, 0],
+    airDrag: 0.1,
+    fluidDrag: 0.4,
+    fluidDensity: 2.0,
+    minBounceImpulse: .5
   
 }
 var noa = new Engine(opts)

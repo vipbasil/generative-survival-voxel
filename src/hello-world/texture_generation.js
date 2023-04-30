@@ -39,23 +39,24 @@ export function init_texture(noa) {
   { min_height: -30, max_height: 3, material: materialIds["gravel"], probability: 0.01 }
 ]; */
 materials = [
-  { name: "Bedrock", min_height: -Infinity, max_height: -50, materialIds: "bedrock", probability: 1, properties: { transparency: 0, shining: 0, liquid: 0, durability: 100, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" } },
-  { name: "Stone", min_height: -50, max_height: 0, materialIds: "stone", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 50, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" } },
-  { name: "Dirt", min_height: -5, max_height: 0, materialIds: "dirt", probability: 0.7, properties: { transparency: 0, shining: 0, liquid: 0, durability: 10, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" } },
-  { name: "Grass", min_height: 0, max_height: 5, materialIds: "grass", probability: 0.9, properties: { transparency: 0, shining: 0, liquid: 0, durability: 5, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" } },
-  { name: "Water", min_height: -50, max_height: 5, materialIds: "water", probability: 0.005, properties: { transparency: 0.9, shining: 0.2, liquid: 1, durability: 0, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" } }
+  { name: "Bedrock", min_height: -Infinity, max_height: -50, materialIds: "bedrock", probability: 1, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 100, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" } },
+  { name: "Stone", min_height: -50, max_height: 0, materialIds: "stone", probability: 0.9, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 50, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" } },
+  { name: "Dirt", min_height: -5, max_height: 0, materialIds: "dirt", probability: 0.7, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 10, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" } },
+  { name: "Grass", min_height: 0, max_height: 5, materialIds: "grass", probability: 0.9, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 5, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" } },
+  { name: "Water", min_height: -50, max_height: 5, materialIds: "water", probability: 0.005, properties: { solid : false, opaque: false, shining: 0.2, fluid: true, durability: 0, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" } }
 ];
 for (var i in materials) {
    
     
     noa.registry.registerMaterial(materials[i].materialIds, materials[i].properties.color, null);
-    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, });
+    //materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, });
     
     materials[i].material = noa.registry.registerBlock( 
       1.0 + Number(i), { 
+        solid : materials[i].properties.solid,
         material: materials[i].materialIds,
-        opaque: (materials[i].transparency> 0 ? false : true),
-        fluid: (materials[i].liquid > 0 ? true : false),
+        opaque:  materials[i].properties.opaque,
+        fluid: materials[i].properties.fluid,
         fluidDensity: 0.1 ,
         viscosity: 0.5 
       });
@@ -123,7 +124,7 @@ for (var i in materials) {
 
         var tmat = noa.rendering.makeStandardMaterial('')
         tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
-        if(material.properties.transparency > 0){
+        if(material.properties.opaque == false){
           tmat.opacityTexture = tmat.diffuseTexture;
           tmat.color = material.color;
         } else{
