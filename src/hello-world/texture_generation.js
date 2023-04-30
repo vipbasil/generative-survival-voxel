@@ -49,7 +49,16 @@ for (var i in materials) {
    
     
     noa.registry.registerMaterial(materials[i].materialIds, materials[i].properties.color, null);
-    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, opaque : 1.0 - Number(materials[i].properties.transparency) });
+    materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, });
+    
+    materials[i].material = noa.registry.registerBlock( 
+      1.0 + Number(i), { 
+        material: materials[i].materialIds,
+        opaque: (materials[i].transparency> 0 ? false : true),
+        fluid: (materials[i].liquid > 0 ? true : false),
+        fluidDensity: 0.1 ,
+        viscosity: 0.5 
+      });
     materialIds[materials[i].materialIds]= materials[i].material;
     create_material(materials[i], noa); 
   }
@@ -115,11 +124,12 @@ for (var i in materials) {
         var tmat = noa.rendering.makeStandardMaterial('')
         tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
         if(material.properties.transparency > 0){
-          tmat.opaqueTexture  = tmat.diffuseTexture; 
+          tmat.opacityTexture = tmat.diffuseTexture;
           tmat.color = material.color;
         } else{
         tmat.bumpTexture  = tmat.diffuseTexture;}
-        noa.registry.registerMaterial(material.materialIds, null, null, false, tmat)
+        noa.registry.registerMaterial(material.materialIds, null, null, false, tmat);
+ 
      
     }
     );
