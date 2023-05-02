@@ -1,50 +1,52 @@
-export function initWorldGen(noa, materials) {
-const { createNoise3D } = require('simplex-noise');
-    const noise3D = createNoise3D();
+export function initWorldGen(noa, blocks) {
 
-function getMaterialByHeight(y) {
-        let availableMaterials = [];
-      
-        for (const material of materials) {
-          if (y >= material.min_height && y <= material.max_height) {
-            availableMaterials.push(material);
+    const { createNoise3D } = require('simplex-noise');
+    const noise3D = createNoise3D();
+    
+    function getVoxelID( x, y, z) {
+        // var noise = new Noise(seed); // Initialize Perlin Noise with a seed value
+         var frequency = 0.005; // Adjust frequency for terrain smoothness
+         var heightScale = 4; // Scale the height values of the terrain
+         var heightOffset = 5; // Shift the terrain up or down
+       
+         //var height = heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
+         var height =  heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
+       
+         if (y < height) {
+           return getBlockByHeight(y);
+         } else {
+           return 0; // empty space
+         }
+       }
+
+       function getBlockByHeight(y) {
+        let availableBlocks = [];
+       //console.log(blocks)
+        for (const block of blocks) {
+         
+            if (y >= block.min_height && y <= block.max_height) {
+            availableBlocks.push(block);
           }
         }
       
-        if (availableMaterials.length === 0) {
+        if (availableBlocks.length === 0) {
           return 0; // empty space
         }
       
-        let totalProbability = availableMaterials.reduce((sum, material) => sum + material.probability, 0);
+        let totalProbability = availableBlocks.reduce((sum, block) => sum + block.probability, 0);
         let randomValue = Math.random() * totalProbability;
       
-        for (const material of availableMaterials) {
-          if (randomValue < material.probability) {
-            //console.log(material.material)
-            return material.material ;
+        for (const block of availableBlocks) {
+          if (randomValue < block.probability) {
+            //console.log(block.id )
+            return block.id ;
           }
-          randomValue -= material.probability;
+          randomValue -= block.probability;
         }
       
         return 0; // empty space
       }
-      
 
-      function getVoxelID(x, y, z) {
-       // var noise = new Noise(seed); // Initialize Perlin Noise with a seed value
-        var frequency = 0.005; // Adjust frequency for terrain smoothness
-        var heightScale = 4; // Scale the height values of the terrain
-        var heightOffset = 5; // Shift the terrain up or down
-      
-        //var height = heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
-        var height =  heightScale * noise3D(x * frequency,y * frequency,z * frequency) + heightOffset;
-      
-        if (y < height) {
-          return getMaterialByHeight(y);
-        } else {
-          return 0; // empty space
-        }
-      }
       
 
   
@@ -56,7 +58,7 @@ noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
     for (var i = 0; i < data.shape[0]; i++) {
         for (var j = 0; j < data.shape[1]; j++) {
             for (var k = 0; k < data.shape[2]; k++) {
-                var voxelID = getVoxelID(x + i, y + j, z + k)
+                var voxelID = getVoxelID( x + i, y + j, z + k)
                 data.set(i, j, k, voxelID)
             }
         }
@@ -65,3 +67,5 @@ noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
     noa.world.setChunkData(id, data)
 })
 }
+
+

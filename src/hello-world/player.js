@@ -3,7 +3,7 @@
 // add a mesh to represent the player, and scale it, etc.
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import '@babylonjs/core/Meshes/Builders/boxBuilder'
-import {materialIds} from './texture_generation'
+import {materialIds} from './generation'
 export function initPlayerMesh(noa){
 var player = noa.playerEntity
 var dat = noa.entities.getPositionData(player)

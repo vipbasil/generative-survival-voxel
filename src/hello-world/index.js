@@ -2,13 +2,10 @@
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
-
-
-//import from "@babylonjs/controls/resizer"; //var base64Img = require('base64-img');
-//import {util} from "util"
-import {init_texture, materials} from './texture_generation'
+import {blocks, init_texture} from './generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
+import {generateTree,create_voxel,parseLSystem} from './flora'
 //explain      
 var opts = {
     debug: true,
@@ -30,30 +27,16 @@ var noa = new Engine(opts)
 init_texture(noa);
 
 
-     
-/*
- * 
- *      World generation
- * 
- *  The world is divided into chunks, and `noa` will emit an 
- *  `worldDataNeeded` event for each chunk of data it needs.
- *  The game client should catch this, and call 
- *  `noa.world.setChunkData` whenever the world data is ready.
- *  (The latter can be done asynchronously.)
- * 
-*/
-initWorldGen(noa, materials);
+initWorldGen(noa, blocks);
 
 
-
-
-/*
- * 
- *      Create a mesh to represent the player:
- * 
-*/
- 
-// get the player entity's ID and other info (position, size, ..)
 initPlayerMesh(noa);
 
-
+var tree = generateTree(3);
+  console.log(tree);
+  tree = generateTree(3);
+  console.log(tree);
+  setTimeout(function () {
+    parseLSystem(tree.lSystem, 25, 1, create_voxel, noa);
+}, 1000)
+ 
