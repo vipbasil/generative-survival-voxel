@@ -5,7 +5,7 @@ import { Engine } from 'noa-engine'
 import {blocks, init_texture} from './generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
-import {generateTree,create_voxel,parseLSystem} from './flora'
+import {generateLSystemString,create_voxel,parseLSystem, lSystemRules} from './flora'
 //explain      
 var opts = {
     debug: true,
@@ -32,11 +32,13 @@ initWorldGen(noa, blocks);
 
 initPlayerMesh(noa);
 
-var tree = generateTree(3);
-  console.log(tree);
-  tree = generateTree(3);
-  console.log(tree);
+var generatedTreeString = generateLSystemString(lSystemRules, 4);
+  console.log(generatedTreeString);
   setTimeout(function () {
-    parseLSystem(tree.lSystem, 25, 1, create_voxel, noa);
+    parseLSystem([-15,5,0],generatedTreeString, create_voxel, noa);
+    generatedTreeString = generateLSystemString(lSystemRules, 4);
+    parseLSystem([15,5,0],generatedTreeString, create_voxel, noa);
+    generatedTreeString = generateLSystemString(lSystemRules, 4);
+    parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
 }, 1000)
  

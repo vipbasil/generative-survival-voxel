@@ -32,8 +32,8 @@ export function init_texture(noa) {
     { name: "Dirt", id: "dirt", opaque : true, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" },
     { name: "Grass", id: "grass",opaque : true, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" },
     { name: "Water", id: "water", opaque : false, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" },
-    { name: "Log Top", id: "log_top", opaque : true, color: [0.627, 0.322, 0.176], texture: "Circular wooden surface with tree rings" },
-    { name: "Log Side", id: "log_side", opaque : true, color: [0.627, 0.322, 0.176], texture: "Long wooden surface with bark texture" },
+    { name: "Oak Log", id: "log_top", opaque : true, color: [0.627, 0.322, 0.176], texture: " with tree rings" },
+    { name: "Oak Bark", id: "log_side", opaque : true, color: [0.627, 0.322, 0.176], texture: " vertical" },
     { name: "Pumpkin Top", id: "pumpkin_top", opaque : true, color: [0.980, 0.627, 0.098], texture: "Orange surface with rough ridges and a stem" },
     { name: "Pumpkin Bottom", id: "pumpkin_bottom", opaque : true, color: [0.980, 0.627, 0.098], texture: "Flat, smooth, and circular orange surface" },
     { name: "Pumpkin Side", id: "pumpkin_side", opaque : true, color: [0.980, 0.627, 0.098], texture: "Rough, ridged, and segmented orange surface with vertical lines" },
@@ -75,7 +75,8 @@ for (var block of blocks) {
   }
 }
   function create_material(material, noa ){
-    const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
+    //const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
+    const url = 'http://93.113.114.107:7862/sdapi/v1/txt2img';
      const headers = {
       'accept': 'application/json',
       'Content-Type': 'application/json'
