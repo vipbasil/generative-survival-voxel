@@ -8,6 +8,7 @@
  * 
 */
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import{createGrass} from './flora'
 const axios = require('axios');
 // block materials (just colors for this demo)
 var textureURL = null;
@@ -22,9 +23,9 @@ export var materialIds = [];
 // Register materials
 
 // do some Babylon.js stuff with the scene, materials, etc.
+
 export function init_texture(noa) {
-
-
+  
   
   materials = [
     { name: "Bedrock", id: "bedrock", opaque : true, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" },

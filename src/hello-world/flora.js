@@ -1,3 +1,4 @@
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder'
 export var lSystemRules = {
     axiom: 'X',
     productions: {
@@ -34,7 +35,7 @@ export function generateLSystemString(rules, iterations) {
 
   export function create_voxel(x, y, z, type, noa) {
     noa.setBlock(type, x, y, z)
-    console.log(`Creating voxel at (${x}, ${y}, ${z}) with type: ${type}`);
+    //console.log(`Creating voxel at (${x}, ${y}, ${z}) with type: ${type}`);
   }
   
  
@@ -100,6 +101,26 @@ export function generateLSystemString(rules, iterations) {
       }
     }
   }
+  export function createGrass(position, numBlades, minHeight, maxHeight, minWidth, maxWidth, scene) {
+    var grass = MeshBuilder.CreateBox("grass",{size:0.01}, scene);
+    //var grass= Mesh.CreateBox('post', 1, scene)
+    for (let i = 0; i < numBlades; i++) {
+        const height = Math.random() * (maxHeight - minHeight) + minHeight;
+        const width = Math.random() * (maxWidth - minWidth) + minWidth;
+        const blade = MeshBuilder.CreatePlane("blade", {height: height, width: width}, scene);
+        //blade.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
+        blade.rotation.z = Math.random() * Math.PI * 2;
+        blade.position.x = position.x + Math.random() * 0.2 - 0.1;
+        blade.position.y = position.y + height / 2;
+        blade.position.z = position.z + Math.random() * 0.2 - 0.1;
+        blade.parent = grass;
+    }
+    
+
+    return grass;
+}
+
+
   
   
 

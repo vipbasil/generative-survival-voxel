@@ -5,7 +5,7 @@ import { Engine } from 'noa-engine'
 import {blocks, init_texture} from './generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
-import {generateLSystemString,create_voxel,parseLSystem, lSystemRules} from './flora'
+import {generateLSystemString,create_voxel,parseLSystem, lSystemRules,createGrass} from './flora'
 //explain      
 var opts = {
     debug: true,
@@ -40,5 +40,21 @@ var generatedTreeString = generateLSystemString(lSystemRules, 4);
     parseLSystem([15,5,0],generatedTreeString, create_voxel, noa);
     generatedTreeString = generateLSystemString(lSystemRules, 4);
     parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
+    
+  const numClumps = 100;
+  const numBladesPerClump = 10;
+  var scene = noa.rendering.getScene();
+  var mesh = createGrass([7,7,7], 10, 0.5, 0.7, 0.05, 0.07, scene)
+  noa.registry.registerBlock(8, {
+    blockMesh: mesh,
+    opaque: true,
+    
+})
 }, 1000)
  
+// Generate grass clumps
+
+
+
+
+
