@@ -104,6 +104,7 @@ export function generateLSystemString(rules, iterations) {
   export function createGrass(position, numBlades, minHeight, maxHeight, minWidth, maxWidth, scene) {
     var grass = MeshBuilder.CreateBox("grass",{size:0.01}, scene);
     //var grass= Mesh.CreateBox('post', 1, scene)
+    //console.log('mesh = '+grass);
     for (let i = 0; i < numBlades; i++) {
         const height = Math.random() * (maxHeight - minHeight) + minHeight;
         const width = Math.random() * (maxWidth - minWidth) + minWidth;

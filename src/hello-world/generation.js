@@ -51,10 +51,13 @@ export function init_texture(noa) {
     { name: "Oak Leaves", id: 7, min_height: 0, max_height: -1, materials: ["oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves"], probability: 0.005, properties: { solid: true, opaque: false, shining: 0, fluid: false, durability: 1 } },
   ];
 
+ 
   for (var material of materials) {
     noa.registry.registerMaterial(material.id, material.color, null);
     create_material(material, noa); 
 }
+
+
 
 for (var block of blocks) {
    
@@ -74,6 +77,15 @@ for (var block of blocks) {
 
     //create_material(materials[i], noa); 
   }
+  var scene = noa.rendering.getScene();
+  var mesh = createGrass([0,0,0], 10, 0.5, 0.7, 0.05, 0.07, scene);
+  console.log(mesh );
+  noa.registry.registerBlock(8, {
+  blockMesh: mesh,
+  opaque: true
+  
+});
+
 }
   function create_material(material, noa ){
     //const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
