@@ -42,7 +42,8 @@ var generatedTreeString = generateLSystemString(lSystemRules, 4);
     parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
     
  
-create_voxel([7,7,7], 8, noa);
+create_voxel(7,7,7, 8, noa);
+create_voxel(7,7,6, 3, noa);
 }, 1000)
  
 // Generate grass clumps
