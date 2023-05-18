@@ -34,7 +34,7 @@ export function generateLSystemString(rules, iterations) {
   //export var generatedTreeString = generateLSystemString(lSystemRules, 5);
 
   export function create_voxel(x, y, z, type, noa) {
-    console.log(`Creating voxel at (${x}, ${y}, ${z}) with type: ${type}`);
+    //console.log(`Creating voxel at (${x}, ${y}, ${z}) with type: ${type}`);
     noa.setBlock(type, x, y, z)
     
   }

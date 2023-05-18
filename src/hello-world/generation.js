@@ -40,7 +40,7 @@ export function init_texture(noa) {
     { name: "Pumpkin Side", id: "pumpkin_side", opaque : true, color: [0.980, 0.627, 0.098], texture: "Rough, ridged, and segmented orange surface with vertical lines" },
     { name: "Oak Leaves", id: "oak_leaves", opaque: false, color: [0.392, 0.706, 0.235], texture: "Cluster of green leaves with small branches and varying shades of green" }
   ];
-
+ 
   blocks = [
     { name: "Bedrock",id:1, min_height: -Infinity, max_height: -50, materials: ["bedrock","bedrock","bedrock","bedrock","bedrock","bedrock"], probability: 1, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 100} },
     { name: "Stone",id: 2,  min_height: -50, max_height: 0, materials:[ "stone","stone","stone","stone","stone","stone"], probability: 0.9, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 50 } },
@@ -50,8 +50,20 @@ export function init_texture(noa) {
     { name: "Log",  id: 6, min_height: 0, max_height: -1, materials:["log_side","log_side","log_top","log_top","log_side","log_side"], probability: 0.005, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 5} },
     { name: "Oak Leaves", id: 7, min_height: 0, max_height: -1, materials: ["oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves"], probability: 0.005, properties: { solid: true, opaque: false, shining: 0, fluid: false, durability: 1 } },
   ];
-
- 
+ /*blocks = [
+    {"name": "Bedrock", "min_height": -64, "max_height": -32, "materialIds": "bedrock", "probability": 0.8, "properties": { "transparency": 0, "shining": 0, "liquid": 0, "durability": 100, "color": [0.15, 0.15, 0.15], "texture": "Rough, gray stone with a few black speckles" }},
+    {"name": "Granite", "min_height": -32, "max_height": -16, "materialIds": "granite", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.5, "liquid": 0, "durability": 95, "color": [0.5, 0.5, 0.5], "texture": "Rough, dark gray texture interspersed with glints of shiny black speckles" }},
+    {"name": "Sandstone", "min_height": -16, "max_height": -8, "materialIds": "sandstone", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 85, "color": [0.9, 0.8, 0.45], "texture": "Smooth, light yellow-orange with occasional brown patches" }},
+    {"name": "Limestone", "min_height": -8, "max_height": -4, "materialIds": "limestone", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 80, "color": [0.75, 0.75, 0.75], "texture": "Light gray with occasional white and black striations" }},
+    {"name": "Clay", "min_height": -4, "max_height": 0, "materialIds": "clay", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 65, "color": [0.4, 0.4, 0.3], "texture": "Smooth, dark brown with occasional lighter brown patches" }},
+    {"name": "Silt", "min_height": -4, "max_height": 0, "materialIds": "silt", "probability": 0.6, "properties": { "transparency": 0, "shining": 0.2, "liquid": 0, "durability": 55, "color": [0.75, 0.7, 0.5], "texture": "Smooth, light grayish-brown with occasional yellow patches" }},
+    {"name": "Peat", "min_height": -4, "max_height": 0, "materialIds": "peat", "probability": 0.5, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 40, "color": [0.2, 0.15, 0.1], "texture": "Dry, dark brown with occasional light brown patches" }},
+    {"name": "Sand", "min_height": -4, "max_height": 0, "materialIds": "sand", "probability": 0.6, "properties": { "transparency": 0, "shining": 0.4, "liquid": 0, "durability": 70, "color": [0.8, 0.75, 0.6], "texture": "Grainy, light beige with occasional dark brown patches" }},
+    {"name": "Gravel", "min_height": -4, "max_height": 0, "materialIds": "gravel", "probability": 0.5, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 75, "color": [0.45, 0.4, 0.35], "texture": "Rough, dark brown with occasional lighter brown patches" }},
+    {"name": "Soil", "min_height": -4, "max_height": 0, "materialIds": "soil", "probability": 0.7, "properties": { "transparency": 0, "shining": 0.2, "liquid": 0, "durability": 50, "color": [0.6, 0.5, 0.4], "texture": "Light brown with occasional dark patches" }},
+    {"name": "Grass", "min_height": 0, "max_height": 0, "materialIds": "grass", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 30, "color": [0.3, 0.5, 0.2], "texture": "Lush, light green with occasional yellow patches" }}
+  ]
+ */
   for (var material of materials) {
     noa.registry.registerMaterial(material.id, material.color, null);
     create_material(material, noa); 
