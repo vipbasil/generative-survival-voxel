@@ -36,10 +36,10 @@ var generatedTreeString = generateLSystemString(lSystemRules, 4);
   //console.log(generatedTreeString);
   setTimeout(function () {
     parseLSystem([-15,5,0],generatedTreeString, create_voxel, noa);
-    generatedTreeString = generateLSystemString(lSystemRules, 4);
-    parseLSystem([15,5,0],generatedTreeString, create_voxel, noa);
-    generatedTreeString = generateLSystemString(lSystemRules, 4);
-    parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
+   generatedTreeString = generateLSystemString(lSystemRules, 4);
+   parseLSystem([15,5,0],generatedTreeString, create_voxel, noa);
+   generatedTreeString = generateLSystemString(lSystemRules, 4);
+  parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
     
  
 create_voxel(7,7,7, 8, noa);
