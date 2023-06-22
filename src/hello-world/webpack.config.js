@@ -56,7 +56,9 @@ module.exports = (env) => ({
             "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
           }
     },
-    
+    experiments: {
+        topLevelAwait: true
+      },
 
     // make the dev server's polling use less CPU :/
     watchOptions: {

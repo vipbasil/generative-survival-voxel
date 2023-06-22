@@ -5,6 +5,7 @@ import { Engine } from 'noa-engine'
 import {blocks, init_texture} from './generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
+import {create_material_list} from './generation'
 import {generateLSystemString,create_voxel,parseLSystem, lSystemRules,createGrass} from './flora'
 //explain      
 var opts = {
@@ -31,6 +32,7 @@ initWorldGen(noa, blocks);
 
 
 initPlayerMesh(noa);
+create_material_list();
 
 var generatedTreeString = generateLSystemString(lSystemRules, 4);
   //console.log(generatedTreeString);
