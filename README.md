@@ -1,6 +1,4 @@
-Of course! Here's a README template for the project you've described:
 
----
 
 # A Multi-Modal Framework for Autonomous Game Content Generation
 
@@ -113,7 +111,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-- Special thanks to all [contributors](https://github.com/your_username/autonomous-game-content-generation/graphs/contributors) who have dedicated their time to this initiative.
+- Special thanks to all [contributors](https://github.com/vipbasil/generative-survival-voxel/graphs/contributors) who have dedicated their time to this initiative.
 - Inspired by technologies like OpenAI's large language models, Stability AI's Stable Diffusion, and OpenAI's Shap-E model.
 
 ---
