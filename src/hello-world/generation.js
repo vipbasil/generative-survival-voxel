@@ -7,7 +7,7 @@
  *  block, which specifies the materials for a given block type.
  * 
 */
-const OPENAI_API_KEY = "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"
+//const OPENAI_API_KEY = "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"
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 import{createGrass} from './flora'
 import {response} from './lllm_generation'
@@ -20,7 +20,7 @@ var textureURL = null;
 
 console.log(response);
 
-
+ const OPENAI_API_KEY="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"
 export var materials = [];
 export var blocks = [];
 export var materialIds = [];
@@ -33,7 +33,7 @@ export function init_texture(noa) {
   
   materials = [
     { name: "Bedrock", id: "bedrock", opaque : true, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" },
-     { name: "Stone", id: "stone", opaque : true, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" },
+    { name: "Stone", id: "stone", opaque : true, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" },
     { name: "Dirt", id: "dirt", opaque : true, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" },
     { name: "Grass", id: "grass",opaque : true, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" },
     { name: "Water", id: "water", opaque : false, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" },
@@ -106,7 +106,9 @@ for (var block of blocks) {
 }
   function create_material(material, noa ){
     //const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
-    const url = 'http://93.113.114.107:7862/sdapi/v1/txt2img';
+
+    //const url = 'http://93.113.114.107:7862/sdapi/v1/txt2img';
+    const url = 'http://192.168.20.80:7863/sdapi/v1/txt2img';
      const headers = {
       'accept': 'application/json',
       'Content-Type': 'application/json'
@@ -208,39 +210,158 @@ client
     console.log(err);
   });
     */
-
-    export function create_material_list( ){
-
-      const client = axios.create({
-        headers: {
-          Authorization: "Bearer " + OPENAI_API_KEY
-        },
-      });
-      const url = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
-      const headers= {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + OPENAI_API_KEY
-       
-      };
-      const payload = {
-        prompt: "Your task is to generate two JavaScript arrays of unique materials and blocks for a voxel-based game world.\n\nStart with the 'materials' array, which should include 11 unique materials. Each material object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the material.\n'id': This is a string that serves as a unique identifier for the material. Typically, it matches the material's name.\n'opaque': This is a boolean that indicates whether the material is opaque or not.\n'color': This is an array of three numerical values between 0 and 1. They represent the Red, Green, and Blue color values of the material.\n'texture': This string describes the material's texture in a visually detailed manner.\nHere is a template for a 'materials' array:\n\n[\n  {\n    \"name\": \"<material_name>\",\n    \"id\": \"<material_id>\",\n    \"opaque\": <true_or_false>,\n    \"color\": [\"<red_value_0_to_1>\", \"<green_value_0_to_1>\", \"<blue_value_0_to_1>\"],\n    \"texture\": \"<detailed_texture_description>\"\n  },\n  // add more material objects as needed\n]\nNext, create the 'blocks' array, which should include various blocks of these materials. Each block object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the block.\n'id': This is a string that serves as a unique identifier for the block. Typically, it matches the block's name.\n'min_height' and 'max_height': These are numerical values that represent the minimum and maximum depths at which the block can be found in the game world. The values range from -64 (deepest) to 0 (surface). You should assign these values based on real geological layers.\n'materials': This is an array of material identifiers which represents the different sides of the block. The order is: front, back, top, bottom, left, right.\n'probability': This is a numerical value between 0 and 1 that represents the chance of finding the block within its height range in the world.\n'properties': This is an object that includes the block's characteristics, such as if it's solid, its opacity, shine, if it's a fluid, and its durability.\nHere is a template for a 'blocks' array:\n\n[\n  {\n    \"name\": \"<block_name>\",\n    \"id\": \"<block_id>\",\n    \"min_height\": \"<min_height>\",\n    \"max_height\": \"<max_height>\",\n    \"materials\": [\"<material_id_front>\", \"<material_id_back>\", \"<material_id_top>\", \"<material_id_bottom>\", \"<material_id_left>\", \"<material_id_right>\"],\n    \"probability\": \"<probability_value>\",\n    \"properties\": { \n      \"solid\": <true_or_false>, \n      \"opaque\": <true_or_false>, \n      \"shining\": \"<shining_value_0_to_1>\", \n      \"fluid\": <true_or_false>, \n      \"durability\": \"<durability_value_1_to_100>\" \n    }\n  },\n  // add more block objects as needed\n]\nFill in these templates with appropriate values for each of these properties. Ensure that you follow a logical order for the geological layers and provide a range of different materials and blocks to create a rich and diverse game world.\n",
-        temperature: 0.7,
-        max_tokens:100, //3104,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0
-        
-      }
-          //payload.prompt = prompt; 
-          console.log(payload);
+  import { OpenAI } from "langchain/llms/openai";
+  import { BufferMemory } from "langchain/memory";
+  import { ConversationChain } from "langchain/chains";
+  import { SimpleSequentialChain, LLMChain } from "langchain/chains";
+  import {
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+  } from "langchain/prompts";
+  import {  PipelinePromptTemplate } from "langchain/prompts";
+import { Material } from '@babylonjs/core/Materials/material';
   
-        client.post(url, payload)
-        .then(response => {
-         console.log(response);
-        })
-        .catch(error => {
-          console.error(error.message);
-        });
+  //export const run = async () => {
+ 
+
+    export async function create_material_list( ){
+
+      
+const llm = new OpenAI({ openAIApiKey: "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",maxTokens:-1, modelName: "gpt-4"});
+const memory = new BufferMemory();
+// This is an LLMChain to write a synopsis given a title of a play.
+
+const template = `You are a game designer. Given the title of the voxel game world, it is your job to write a detailed description of that game world.
+
+Title: {title}
+Game Designer: This is a description of the above voxel game world:`;
+
+const promptTemplate = new PromptTemplate({
+  template,
+  inputVariables: ["title"],
+});
+
+const descriptionChain = new LLMChain({ llm, prompt: promptTemplate });
+const descriptionText = await descriptionChain.call({ title: "Post-apocalyptic Earth with mostly barren landscape" });
+
+console.log(descriptionText);
+
+const blocklistLLM = new OpenAI({ openAIApiKey: "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", maxTokens:-1});
+
+const blockListTemplate = `You are a voxel game block designer. Given the description of the voxel game world, it is your job to generate a complete list of geological based building blocks (like stone, lava, granit, etc) for that game world. Each block is an basic element of this world, based on geological proceses, just consider that it is a Minecraft like game. No complex structures.
+
+Voxel Game World Description:
+{description}
+Please format the response using a simple list of comma separated building blocks, like this: grass, stone, dirt
+
+Building blocks for the above voxel game world by a voxel game block designer:`;
+
+const blockListPromptTemplate = new PromptTemplate({
+  template: blockListTemplate,
+  inputVariables: ["description"],
+});
+
+const blockListChain = new LLMChain({
+  llm: blocklistLLM,
+  prompt: blockListPromptTemplate,
+});
+const BlockListResult = await blockListChain.call({description: descriptionText.text});
+console.log(BlockListResult);
+
+// Now that we have the building blocks, we generate the materials.
+const materialsLLM = new OpenAI({ openAIApiKey: "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",maxTokens:-1,modelName: "gpt-4"});
+    
+const materialsTemplate = `You are a voxel game material designer. Given the list of building blocks, it is your job to generate a list of materials for each block from the list.
+
+The complete List of Building Blocks:
+{buildingblocks}
+Please format the response using the following template for the materials.
+This JSON format represents a complete list of materials for the previous blocks, each expressed as a dictionary with five keys:
+
+name (string): This field represents the common name of the material.
+id (string): This field acts as a unique identifier for the material in the game.
+opaque (boolean): This field indicates if the material is opaque (true) or not (false).
+color (array of 3 numbers): This field represents the color of the material, described as RGB values, where each value is a decimal between 0 and 1.
+texture (string): This field is a 10 words description of the appearance and feel of the material's surface.
+Materials for the above building blocks by a voxel game material designer:`;
+
+const materialsPromptTemplate = new PromptTemplate({
+  template: materialsTemplate,
+  inputVariables: ["buildingblocks"],
+});
+
+console.log(materialsPromptTemplate);
+const materialsChain = new LLMChain({
+  llm: materialsLLM,
+  prompt: materialsPromptTemplate,
+});
+const MaterialsResult = await materialsChain.call({buildingblocks: BlockListResult.text});
+console.log(MaterialsResult);
+// An LLMChain to generate a list of building blocks (materials like grass, stone, etc.) based on the game world description.
+const blocksLLM = new OpenAI({ openAIApiKey: "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", maxTokens:-1,modelName: "gpt-4"});
+
+const blocksTemplate = PromptTemplate.fromTemplate(`You are a voxel game block designer. Given the description of the voxel game world, it is your job to generate a JSON with the blocks (like grass, stone, etc.) using the material list for that game world.
+
+Voxel Game World Description:
+{description}
+Game Block List for the above voxel game world by a voxel game block designer:
+{blocklist}
+Material list for the above blocks:
+{materialist}
+Please format the response using the following template for the building blocks,This JSON format defines blocks for a voxel-based game:
+name: Block's name, like Bedrock.
+id: Unique identifier for the block.
+min_height & max_height: The vertical range where the block can occur in the range -Infinity to 0, based on geological and worldbuilding logic.
+materials: Array containing the material ids for each side of the block like materials:["log_side","log_side","log_top","log_top","log_side","log_side"], the materials need to be from the material list from above.
+probability: The chance for this block to naturally appear within its height range in the range 0 to 1.
+properties: Further attributes of the block, including:
+solid: Indicates if the block is solid.
+opaque: Indicates if the block is see-through.
+shining: Describes how much light the block emits.
+fluid: Shows if the block is fluid-like.
+durability: Describes the block's resistance to damage in a 0-100 range.
+
+Building blocks for the above voxel game world by a voxel game block designer:`);
+
+
+
+
+/*const blocksPromptTemplate = new PromptTemplate({
+  template: formattedPrompt,
+  
+});*/
+
+const blocksChain = new LLMChain({
+  llm: blocksLLM,
+  prompt: blocksTemplate ,
+});
+const blocksresult = await blocksChain .call({description : descriptionText.text, blocklist: BlockListResult.text, materialist: MaterialsResult.text });
+console.log(blocksresult.text);
+
+
+
+
+
+/*const res1 = await chain.call({ 
+  input:formattedPrompt});
+  console.log(res1);
+      /*const res1 = await chain.call({ 
+        input: "Generate please two JavaScript arrays of unique materials and blocks for a voxel-based game world. Start with the 'materials' array, which should include 11 unique materials. Each material object in the array will have the following properties:'name': This is a string that represents the common name of the material.'id': This is a string that serves as a unique identifier for the material. Typically, it matches the material's name. 'opaque': This is a boolean that indicates whether the material is opaque or not. 'color': This is an array of three numerical values between 0 and 1. They represent the Red, Green, and Blue color values of the material.\n'texture': This string describes the material's texture in a visually detailed manner.\nHere is a template for a 'materials' array:\n\n[\n  {\n    \"name\": \"<material_name>\",\n    \"id\": \"<material_id>\",\n    \"opaque\": <true_or_false>,\n    \"color\": [\"<red_value_0_to_1>\", \"<green_value_0_to_1>\", \"<blue_value_0_to_1>\"],\n    \"texture\": \"<detailed_texture_description>\"\n  },\n  // add more material objects as needed\n]\nNext, create the 'blocks' array, which should include various blocks of these materials. Each block object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the block.\n'id': This is a string that serves as a unique identifier for the block. Typically, it matches the block's name.\n'min_height' and 'max_height': These are numerical values that represent the minimum and maximum depths at which the block can be found in the game world. The values range from -64 (deepest) to 0 (surface). You should assign these values based on real geological layers.\n'materials': This is an array of material identifiers which represents the different sides of the block. The order is: front, back, top, bottom, left, right.\n'probability': This is a numerical value between 0 and 1 that represents the chance of finding the block within its height range in the world.\n'properties': This is an object that includes the block's characteristics, such as if it's solid, its opacity, shine, if it's a fluid, and its durability.\nHere is a template for a 'blocks' array:\n\n[\n  {\n    \"name\": \"<block_name>\",\n    \"id\": \"<block_id>\",\n    \"min_height\": \"<min_height>\",\n    \"max_height\": \"<max_height>\",\n    \"materials\": [\"<material_id_front>\", \"<material_id_back>\", \"<material_id_top>\", \"<material_id_bottom>\", \"<material_id_left>\", \"<material_id_right>\"],\n    \"probability\": \"<probability_value>\",\n    \"properties\": { \n      \"solid\": <true_or_false>, \n      \"opaque\": <true_or_false>, \n      \"shining\": \"<shining_value_0_to_1>\", \n      \"fluid\": <true_or_false>, \n      \"durability\": \"<durability_value_1_to_100>\" \n    }\n  },\n  // add more block objects as needed\n]\nFill in these templates with appropriate values for each of these properties. Ensure that you follow a logical order for the geological layers and provide a range of different materials and blocks to create a rich and diverse game world.\n Do not add anything." });
+      console.log(res1);
+      const template = "What is a good name for a company that makes {product}?";
+      const promptA = new PromptTemplate({ template, inputVariables: ["product"] });
+    
+      // We can use the `format` method to format the template with the given input values.
+      const responseA = await promptA.format({ product: "colorful socks" });
+      console.log({ responseA });
+      const promptB = PromptTemplate.fromTemplate(
+        "What is a good name for a company that makes {product}?"
+      );
+      const responseB = await promptB.format({ product: "colorful socks" });
+      console.log({ responseB });*/
+     
   
       }
      

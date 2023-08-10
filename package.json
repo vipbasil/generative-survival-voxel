@@ -31,6 +31,7 @@
     "cors": "^2.8.5",
     "fs": "^0.0.1-security",
     "install": "^0.13.0",
+    "langchain": "^0.0.102",
     "noa-engine": "^0.32.0",
     "npm": "^9.6.5",
     "openai": "^3.2.1",
