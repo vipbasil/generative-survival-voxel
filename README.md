@@ -24,12 +24,12 @@ Modern game design often involves manual labor for asset generation and integrat
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your_username/autonomous-game-content-generation.git
+git clone https://github.com/vipbasil/generative-survival-voxel.git
 ```
 
 2. Navigate to the project directory:
 ```bash
-cd autonomous-game-content-generation
+cd generative-survival-voxel
 ```
 
 3. Install dependencies:
