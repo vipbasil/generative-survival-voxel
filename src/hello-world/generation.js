@@ -8,9 +8,10 @@
  * 
 */
 //const OPENAI_API_KEY = "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"
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import { createNoise2D } from 'simplex-noise'
 import{createGrass} from './flora'
-import {response} from './lllm_generation'
 const axios = require('axios');
 const prompt = "Your task is to generate two JavaScript arrays of unique materials and blocks for a voxel-based game world.\n\nStart with the 'materials' array, which should include 11 unique materials. Each material object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the material.\n'id': This is a string that serves as a unique identifier for the material. Typically, it matches the material's name.\n'opaque': This is a boolean that indicates whether the material is opaque or not.\n'color': This is an array of three numerical values between 0 and 1. They represent the Red, Green, and Blue color values of the material.\n'texture': This string describes the material's texture in a visually detailed manner.\nHere is a template for a 'materials' array:\n\n[\n  {\n    \"name\": \"<material_name>\",\n    \"id\": \"<material_id>\",\n    \"opaque\": <true_or_false>,\n    \"color\": [\"<red_value_0_to_1>\", \"<green_value_0_to_1>\", \"<blue_value_0_to_1>\"],\n    \"texture\": \"<detailed_texture_description>\"\n  },\n  // add more material objects as needed\n]\nNext, create the 'blocks' array, which should include various blocks of these materials. Each block object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the block.\n'id': This is a string that serves as a unique identifier for the block. Typically, it matches the block's name.\n'min_height' and 'max_height': These are numerical values that represent the minimum and maximum depths at which the block can be found in the game world. The values range from -64 (deepest) to 0 (surface). You should assign these values based on real geological layers.\n'materials': This is an array of material identifiers which represents the different sides of the block. The order is: front, back, top, bottom, left, right.\n'probability': This is a numerical value between 0 and 1 that represents the chance of finding the block within its height range in the world.\n'properties': This is an object that includes the block's characteristics, such as if it's solid, its opacity, shine, if it's a fluid, and its durability.\nHere is a template for a 'blocks' array:\n\n[\n  {\n    \"name\": \"<block_name>\",\n    \"id\": \"<block_id>\",\n    \"min_height\": \"<min_height>\",\n    \"max_height\": \"<max_height>\",\n    \"materials\": [\"<material_id_front>\", \"<material_id_back>\", \"<material_id_top>\", \"<material_id_bottom>\", \"<material_id_left>\", \"<material_id_right>\"],\n    \"probability\": \"<probability_value>\",\n    \"properties\": { \n      \"solid\": <true_or_false>, \n      \"opaque\": <true_or_false>, \n      \"shining\": \"<shining_value_0_to_1>\", \n      \"fluid\": <true_or_false>, \n      \"durability\": \"<durability_value_1_to_100>\" \n    }\n  },\n  // add more block objects as needed\n]\nFill in these templates with appropriate values for each of these properties. Ensure that you follow a logical order for the geological layers and provide a range of different materials and blocks to create a rich and diverse game world.\n";
 
@@ -18,9 +19,19 @@ const prompt = "Your task is to generate two JavaScript arrays of unique materia
 var textureURL = null;
 // Material colors
 
-console.log(response);
+const OLLAMA_CONFIG = {
+  endpoint: 'https://341f48ced197.ngrok-free.app',
+  completionPath: '/v1/completions',
+  model: 'deepseek-r1:1.5b',
+  timeoutMs: 120 * 1000,
+};
 
- const OPENAI_API_KEY="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"
+const ollamaClient = axios.create({
+  baseURL: OLLAMA_CONFIG.endpoint,
+  timeout: OLLAMA_CONFIG.timeoutMs,
+  headers: { 'Content-Type': 'application/json' },
+});
+
 export var materials = [];
 export var blocks = [];
 export var materialIds = [];
@@ -86,7 +97,7 @@ for (var block of blocks) {
         solid : block.properties.solid,
         material: block.materials,
         opaque:  block.properties.opaque,
-        luid: block.properties.fluid,
+        fluid: block.properties.fluid,
         fluidDensity: 0.1 ,
         viscosity: 0.5 
       });
@@ -105,82 +116,469 @@ for (var block of blocks) {
 
 }
   function create_material(material, noa ){
-    //const url = 'http://192.168.10.124:7860/sdapi/v1/txt2img';
-
-    //const url = 'http://93.113.114.107:7862/sdapi/v1/txt2img';
-    const url = 'http://192.168.20.80:7863/sdapi/v1/txt2img';
-     const headers = {
-      'accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
-    const payload = {
-      
-        "enable_hr": "true",
-        "denoising_strength": 0,
-        "firstphase_width": 0,
-        "firstphase_height": 0,
-        "hr_scale": 2,
-        "hr_upscaler": "Nearest",
-        "hr_second_pass_steps": 0,
-        "hr_resize_x": 32,
-        "hr_resize_y": 32,
-        "prompt": "grass",
-        "seed": -1,
-        "subseed": -1,
-        "subseed_strength": 0,
-        "seed_resize_from_h": -1,
-        "seed_resize_from_w": -1,
-        "sampler_name": "Euler a",
-        "batch_size": 1,
-        "n_iter": 1,
-        "steps": 50,
-        "cfg_scale": 7,
-        "width": 512,
-        "height": 512,
-        "restore_faces": false,
-        "tiling": true,
-        "negative_prompt": "",
-        "eta": 0,
-        "s_churn": 0,
-        "s_tmax": 0,
-        "s_tmin": 0,
-        "s_noise": 1,
-        "override_settings": {},
-        "override_settings_restore_afterwards": true,
-        "sampler_index": "Euler"
-      
-      
-    };
-        payload.prompt = material.name+", "+material.texture;
-        //console.log(prompt);
-
-      axios.post(url, payload, { headers })
-      .then(response => {
-        const images = response.data.images;
-        
-        images.forEach(
-          (imgStr) => {
-          var scene = noa.rendering.getScene()
-
-         console.log(material);   
-        var tmat = noa.rendering.makeStandardMaterial('')
-        tmat.diffuseTexture = new Texture("data:image/png;base64,"+imgStr, scene)
-        if(material.opaque == false){
-          tmat.opacityTexture = tmat.diffuseTexture;
-          tmat.color = material.color;
-        } else{
-        tmat.bumpTexture  = tmat.diffuseTexture;}
+    fetchMaterialRecipe(material)
+      .then((recipe) => {
+        const resolvedRecipe = applyMaterialHeuristics(
+          material,
+          recipe || createFallbackRecipe(material)
+        );
+        material.generatedRecipe = resolvedRecipe;
+        console.log('Material recipe', material.id, resolvedRecipe);
+        const tmat = buildProceduralMaterial(noa, material, resolvedRecipe);
         noa.registry.registerMaterial(material.id, null, null, false, tmat);
- 
-     
-    }
-    );
       })
-      .catch(error => {
-        console.error(error.message);
+      .catch((error) => {
+        console.warn(`Falling back to flat color for material ${material.id}: ${error.message || error}`);
+        const fallbackRecipe = applyMaterialHeuristics(
+          material,
+          createFallbackRecipe(material)
+        );
+        const fallbackMaterial = buildProceduralMaterial(noa, material, fallbackRecipe);
+        noa.registry.registerMaterial(material.id, null, null, false, fallbackMaterial);
       });
-
     }
+
+    async function fetchMaterialRecipe(material) {
+      const baseHex = rgbFloatsToHex(material.color);
+      const promptParts = [
+        'You are designing procedural voxel textures for a survival crafting game.',
+        `Material name: ${material.name}`,
+        `Base color hint (hex): ${baseHex}`,
+        'Respond with compact JSON using this schema:',
+        '{',
+        '  "description": string,',
+        '  "palette": array of 3 hex colors (e.g. ["#a1b2c3","..."]),',
+        '  "pattern": one of ["speckled","strata","veins","mottled"],',
+        '  "accentProbability": number between 0 and 0.6,',
+        '  "scale": integer between 3 and 20',
+        '}',
+        'Return JSON only without code fences or extra commentary.',
+      ];
+      try {
+        const response = await ollamaClient.post(
+          OLLAMA_CONFIG.completionPath,
+          {
+            model: OLLAMA_CONFIG.model,
+            prompt: promptParts.join('\n'),
+            stream: false,
+            temperature: 0.35,
+          }
+        );
+        const rawText = extractTextFromCompletion(response.data);
+        const parsed = extractJsonObject(rawText);
+        return parsed ? sanitizeRecipe(parsed) : null;
+      } catch (err) {
+        console.warn(`Unable to fetch procedural recipe for ${material.name}: ${err.message || err}`);
+        return null;
+      }
+    }
+
+    function extractTextFromCompletion(data) {
+      if (!data) return '';
+      if (Array.isArray(data.choices) && data.choices.length > 0) {
+        const choice = data.choices[0];
+        if (typeof choice.text === 'string') return choice.text;
+        if (choice.message && typeof choice.message.content === 'string') {
+          return choice.message.content;
+        }
+      }
+      if (typeof data.completion === 'string') return data.completion;
+      return '';
+    }
+
+    function extractJsonObject(text) {
+      if (typeof text !== 'string' || text.trim().length === 0) return null;
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) return null;
+      try {
+        return JSON.parse(match[0]);
+      } catch (error) {
+        console.warn(`Failed to parse recipe JSON: ${error.message || error}`);
+        return null;
+      }
+    }
+
+    function sanitizeRecipe(raw) {
+      const recipe = {};
+      recipe.description = typeof raw.description === 'string' ? raw.description.trim() : '';
+      recipe.pattern = typeof raw.pattern === 'string' ? raw.pattern.toLowerCase() : 'speckled';
+      recipe.accentProbability = clampNumber(Number(raw.accentProbability ?? 0.25), 0, 0.8);
+      recipe.scale = Math.round(clampNumber(Number(raw.scale ?? 6), 2, 32));
+      recipe.palette = Array.isArray(raw.palette) ? raw.palette.slice(0, 5) : [];
+      return recipe;
+    }
+
+    function buildProceduralMaterial(noa, material, recipe) {
+      const scene = noa.rendering.getScene();
+      const palette = getPaletteFromRecipe(recipe, material);
+      const seedRng = createRng(`${material.id}-${material.name}`);
+      const pattern = recipe.pattern || 'speckled';
+      const accentProbability = clampNumber(recipe.accentProbability ?? 0.25, 0, 0.9);
+      const scale = clampNumber(recipe.scale ?? 6, 2, 48);
+      const textureSize = 64;
+      const patternNoise = createNoise2D(createRng(`${material.id}-${material.name}-pattern`));
+      const accentNoise = createNoise2D(createRng(`${material.id}-${material.name}-accent`));
+      const dynamicTexture = new DynamicTexture(
+        `proc-${material.id}`,
+        { width: textureSize, height: textureSize },
+        scene,
+        false
+      );
+      const context = dynamicTexture.getContext();
+      const imageData = context.createImageData(textureSize, textureSize);
+      const accentColors = palette.slice(1);
+      const baseColor = palette[0];
+      const offsets = {
+        x: seedRng() * 512,
+        y: seedRng() * 512,
+      };
+      const baseFreq = 1 / Math.max(scale, 1);
+      for (let y = 0; y < textureSize; y++) {
+        for (let x = 0; x < textureSize; x++) {
+          const idx = (y * textureSize + x) * 4;
+          const shadeSample = patternSample(
+            x,
+            y,
+            pattern,
+            baseFreq,
+            offsets,
+            patternNoise
+          );
+          let rgb = applyBaseShading(baseColor, shadeSample);
+          if (accentColors.length > 0) {
+            const accentMask = noiseToUnit(
+              accentNoise(
+                (x + offsets.x) * baseFreq * 1.8,
+                (y + offsets.y) * baseFreq * 1.8
+              )
+            );
+            if (accentMask < accentProbability) {
+              const selector = noiseToUnit(
+                accentNoise(
+                  (x + offsets.x) * baseFreq * 3.1 + 5.37,
+                  (y + offsets.y) * baseFreq * 3.1 - 3.18
+                )
+              );
+              const accentIndex = Math.floor(selector * accentColors.length);
+              const accentColor =
+                accentColors[accentIndex % accentColors.length] || baseColor;
+              rgb = blendColors(rgb, accentColor, 0.4);
+            }
+          }
+          imageData.data[idx] = rgb[0];
+          imageData.data[idx + 1] = rgb[1];
+          imageData.data[idx + 2] = rgb[2];
+          imageData.data[idx + 3] = 255;
+        }
+      }
+      context.putImageData(imageData, 0, 0);
+      dynamicTexture.update(false);
+      dynamicTexture.wrapU = Texture.WRAP_ADDRESSMODE;
+      dynamicTexture.wrapV = Texture.WRAP_ADDRESSMODE;
+      const tmat = noa.rendering.makeStandardMaterial('');
+      tmat.diffuseTexture = dynamicTexture;
+      if (material.opaque === false) {
+        tmat.diffuseTexture.hasAlpha = true;
+        tmat.opacityTexture = tmat.diffuseTexture;
+        tmat.transparencyMode = 2;
+      } else {
+        tmat.bumpTexture = dynamicTexture;
+      }
+      tmat.metadata = {
+        description: recipe.description,
+        palette: palette.map(rgbToHex),
+      };
+      return tmat;
+    }
+
+    function createFallbackRecipe(material) {
+      return {
+        description: `${material.name} fallback procedural recipe`,
+        palette: [rgbFloatsToHex(material.color)],
+        pattern: 'speckled',
+        accentProbability: 0.2,
+        scale: 6,
+      };
+    }
+
+    function getPaletteFromRecipe(recipe, material) {
+      const palette = [];
+      if (recipe && Array.isArray(recipe.palette)) {
+        for (const entry of recipe.palette) {
+          const rgb = hexToRgb(entry);
+          if (rgb) {
+            palette.push(rgb);
+          }
+        }
+      }
+      if (!palette.length) {
+        palette.push(floatsToRgb(material.color));
+      }
+      const rng = createRng(`${material.id}-palette`);
+      while (palette.length < 3) {
+        const base = palette[0];
+        const delta = (rng() - 0.5) * 0.25;
+        palette.push(adjustColor(base, delta));
+      }
+      return palette;
+    }
+
+    function applyMaterialHeuristics(material, recipe) {
+      const adjusted = {
+        description: recipe.description,
+        pattern: recipe.pattern || 'speckled',
+        accentProbability: clampNumber(recipe.accentProbability ?? 0.2, 0, 0.6),
+        scale: clampNumber(recipe.scale ?? 8, 3, 24),
+        palette: normalizePalette(recipe.palette, material),
+      };
+      const name = (material.name || material.id || '').toLowerCase();
+      if (name.includes('water')) {
+        adjusted.pattern = 'water';
+        adjusted.accentProbability = 0.05;
+        adjusted.scale = 10;
+      } else if (name.includes('grass')) {
+        adjusted.pattern = 'mottled';
+        adjusted.accentProbability = Math.min(adjusted.accentProbability, 0.15);
+        adjusted.scale = Math.max(adjusted.scale, 10);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.28,
+          darken: -0.25,
+        });
+      } else if (name.includes('leaf')) {
+        adjusted.pattern = 'foliage';
+        adjusted.accentProbability = Math.min(adjusted.accentProbability, 0.22);
+        adjusted.scale = Math.max(adjusted.scale, 12);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.35,
+          darken: -0.2,
+        });
+      } else if (name.includes('log') || name.includes('bark')) {
+        adjusted.pattern = 'wood';
+        adjusted.accentProbability = Math.max(adjusted.accentProbability, 0.25);
+        adjusted.scale = Math.min(adjusted.scale, 8);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.2,
+          darken: -0.35,
+        });
+      } else if (name.includes('stone') || name.includes('granite') || name.includes('rock')) {
+        adjusted.pattern = 'veins';
+        adjusted.accentProbability = Math.min(adjusted.accentProbability, 0.25);
+        adjusted.scale = clampNumber(adjusted.scale, 6, 18);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.18,
+          darken: -0.22,
+        });
+      } else if (name.includes('dirt') || name.includes('soil') || name.includes('clay') || name.includes('peat')) {
+        adjusted.pattern = 'mottled';
+        adjusted.accentProbability = clampNumber(adjusted.accentProbability, 0.2, 0.35);
+        adjusted.scale = clampNumber(adjusted.scale, 6, 14);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.18,
+          darken: -0.3,
+        });
+      } else if (name.includes('sand')) {
+        adjusted.pattern = 'strata';
+        adjusted.accentProbability = Math.min(adjusted.accentProbability, 0.18);
+        adjusted.scale = Math.max(adjusted.scale, 14);
+        adjusted.palette = buildThreeTonePalette(floatsToRgb(material.color), {
+          lighten: 0.15,
+          darken: -0.12,
+        });
+      }
+      adjusted.palette = adjusted.palette.map(rgbToHex);
+      return adjusted;
+    }
+
+    function normalizePalette(palette, material) {
+      const normalized = [];
+      if (Array.isArray(palette)) {
+        for (const entry of palette) {
+          const rgb = hexToRgb(entry);
+          if (rgb) normalized.push(rgb);
+        }
+      }
+      if (!normalized.length) {
+        normalized.push(floatsToRgb(material.color));
+      }
+      const base = normalized[0];
+      while (normalized.length < 3) {
+        const offset = (normalized.length % 2 === 0) ? 0.2 : -0.25;
+        normalized.push(adjustColor(base, offset));
+      }
+      return normalized;
+    }
+
+    function buildThreeTonePalette(baseRgb, { lighten, darken }) {
+      const center = baseRgb;
+      const lighter = adjustColor(baseRgb, lighten);
+      const darker = adjustColor(baseRgb, darken);
+      return [center, lighter, darker];
+    }
+
+    function adjustColor(rgb, delta) {
+      const factor = 1 + delta;
+      return [
+        Math.round(clampNumber(rgb[0] * factor, 0, 255)),
+        Math.round(clampNumber(rgb[1] * factor, 0, 255)),
+        Math.round(clampNumber(rgb[2] * factor, 0, 255)),
+      ];
+    }
+
+    function patternSample(x, y, pattern, baseFreq, offsets, noiseFn) {
+      const fx = x + offsets.x;
+      const fy = y + offsets.y;
+      const base = fractalNoise(noiseFn, fx, fy, baseFreq, 4, 2.2, 0.55);
+      switch (pattern) {
+        case 'strata': {
+          const layer = smoothStep(0.25, 0.75, frac(fy * baseFreq * 1.8));
+          const variation = fractalNoise(noiseFn, fx, fy + base * 6.0, baseFreq * 0.5, 3, 2.1, 0.6);
+          return clamp01(layer * 0.65 + variation * 0.35);
+        }
+        case 'veins': {
+          const primary = fractalNoise(noiseFn, fx, fy, baseFreq * 1.2, 4, 1.9, 0.5);
+          const detail = Math.pow(
+            1 - Math.abs(noiseFn(fx * baseFreq * 3, fy * baseFreq * 3)),
+            3
+          );
+          return clamp01(primary * 0.4 + detail * 0.6);
+        }
+        case 'mottled': {
+          const broad = fractalNoise(noiseFn, fx, fy, baseFreq * 0.7, 3, 1.9, 0.55);
+          const detail = fractalNoise(noiseFn, fx + 13.5, fy - 7.2, baseFreq * 2.6, 2, 2.4, 0.5);
+          return clamp01(broad * 0.7 + detail * 0.3);
+        }
+        case 'wood': {
+          const radial = frac(fx * baseFreq * 0.6 + base * 0.2);
+          const rings = smoothStep(0.2, 0.8, radial);
+          const grain = fractalNoise(noiseFn, fx, fy * 1.7, baseFreq * 2.8, 3, 2.6, 0.45);
+          return clamp01(rings * 0.65 + grain * 0.35);
+        }
+        case 'foliage': {
+          const canopy = fractalNoise(noiseFn, fx, fy, baseFreq * 0.9, 3, 2.3, 0.55);
+          const gaps = Math.pow(fractalNoise(noiseFn, fx, fy, baseFreq * 2.6, 2, 2.0, 0.5), 2);
+          return clamp01(canopy * 0.75 + gaps * 0.25);
+        }
+        case 'water': {
+          const ripple = fractalNoise(noiseFn, fx, fy, baseFreq * 1.4, 4, 2.1, 0.6);
+          return clamp01(0.5 + (ripple - 0.5) * 0.4);
+        }
+        case 'speckled':
+        default: {
+          const specks = fractalNoise(noiseFn, fx, fy, baseFreq * 3.2, 2, 2.8, 0.45);
+          return clamp01(base * 0.6 + specks * 0.4);
+        }
+      }
+    }
+
+    function createRng(seedString) {
+      let seed = 0;
+      for (let i = 0; i < seedString.length; i++) {
+        seed = (seed << 5) - seed + seedString.charCodeAt(i);
+        seed |= 0;
+      }
+      return function rng() {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 0xffffffff;
+      };
+    }
+
+    function clampNumber(value, min, max) {
+      const num = Number.isFinite(value) ? value : min;
+      return Math.max(min, Math.min(max, num));
+    }
+
+    function clamp01(value) {
+      return clampNumber(value, 0, 1);
+    }
+
+    function floatsToRgb(color) {
+      if (Array.isArray(color) && color.length === 3) {
+        return [
+          Math.round(clamp01(color[0]) * 255),
+          Math.round(clamp01(color[1]) * 255),
+          Math.round(clamp01(color[2]) * 255),
+        ];
+      }
+      return [127, 127, 127];
+    }
+
+    function rgbFloatsToHex(color) {
+      const [r, g, b] = floatsToRgb(color);
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    function rgbToHex(rgb) {
+      return `#${toHex(rgb[0])}${toHex(rgb[1])}${toHex(rgb[2])}`;
+    }
+
+    function toHex(component) {
+      const hex = clampNumber(component, 0, 255).toString(16);
+      return hex.length === 1 ? `0${hex}` : hex;
+    }
+
+    function hexToRgb(hex) {
+      if (typeof hex !== 'string') return null;
+      const sanitized = hex.trim().replace(/^#/, '');
+      if (sanitized.length !== 6) return null;
+      const num = parseInt(sanitized, 16);
+      if (Number.isNaN(num)) return null;
+      return [
+        (num >> 16) & 0xff,
+        (num >> 8) & 0xff,
+        num & 0xff,
+      ];
+    }
+
+    function applyBaseShading(baseColor, shadeSample) {
+      const minFactor = 0.7;
+      const maxFactor = 1.15;
+      const factor = minFactor + shadeSample * (maxFactor - minFactor);
+      return [
+        Math.round(clampNumber(baseColor[0] * factor, 0, 255)),
+        Math.round(clampNumber(baseColor[1] * factor, 0, 255)),
+        Math.round(clampNumber(baseColor[2] * factor, 0, 255)),
+      ];
+    }
+
+    function blendColors(source, target, amount) {
+      const t = clampNumber(amount, 0, 1);
+      return [
+        Math.round(source[0] + (target[0] - source[0]) * t),
+        Math.round(source[1] + (target[1] - source[1]) * t),
+        Math.round(source[2] + (target[2] - source[2]) * t),
+      ];
+    }
+
+    function noiseToUnit(value) {
+      const safe = Number.isFinite(value) ? value : 0;
+      return clamp01(0.5 + safe * 0.5);
+    }
+
+    function fractalNoise(noiseFn, x, y, baseFreq, octaves = 4, lacunarity = 2, gain = 0.5) {
+      let amplitude = 1;
+      let freq = baseFreq;
+      let total = 0;
+      let maxAmp = 0;
+      for (let i = 0; i < octaves; i++) {
+        total += noiseFn(x * freq, y * freq) * amplitude;
+        maxAmp += amplitude;
+        amplitude *= gain;
+        freq *= lacunarity;
+      }
+      if (maxAmp === 0) return 0.5;
+      const normalized = total / maxAmp;
+      return clamp01(0.5 + normalized * 0.5);
+    }
+
+    function smoothStep(edge0, edge1, x) {
+      const t = clampNumber((x - edge0) / (edge1 - edge0), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    function frac(value) {
+      return value - Math.floor(value);
+    }
+
     /*
     const axios = require("axios");
 
@@ -221,7 +619,6 @@ client
     SystemMessagePromptTemplate,
   } from "langchain/prompts";
   import {  PipelinePromptTemplate } from "langchain/prompts";
-import { Material } from '@babylonjs/core/Materials/material';
   
   //export const run = async () => {
  
