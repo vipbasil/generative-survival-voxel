@@ -7,23 +7,18 @@
  *  block, which specifies the materials for a given block type.
  * 
 */
-//const OPENAI_API_KEY = "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"
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 import { createNoise2D } from 'simplex-noise'
-import{createGrass} from './flora'
+import { logHud } from './hud'
 const axios = require('axios');
-const prompt = "Your task is to generate two JavaScript arrays of unique materials and blocks for a voxel-based game world.\n\nStart with the 'materials' array, which should include 11 unique materials. Each material object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the material.\n'id': This is a string that serves as a unique identifier for the material. Typically, it matches the material's name.\n'opaque': This is a boolean that indicates whether the material is opaque or not.\n'color': This is an array of three numerical values between 0 and 1. They represent the Red, Green, and Blue color values of the material.\n'texture': This string describes the material's texture in a visually detailed manner.\nHere is a template for a 'materials' array:\n\n[\n  {\n    \"name\": \"<material_name>\",\n    \"id\": \"<material_id>\",\n    \"opaque\": <true_or_false>,\n    \"color\": [\"<red_value_0_to_1>\", \"<green_value_0_to_1>\", \"<blue_value_0_to_1>\"],\n    \"texture\": \"<detailed_texture_description>\"\n  },\n  // add more material objects as needed\n]\nNext, create the 'blocks' array, which should include various blocks of these materials. Each block object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the block.\n'id': This is a string that serves as a unique identifier for the block. Typically, it matches the block's name.\n'min_height' and 'max_height': These are numerical values that represent the minimum and maximum depths at which the block can be found in the game world. The values range from -64 (deepest) to 0 (surface). You should assign these values based on real geological layers.\n'materials': This is an array of material identifiers which represents the different sides of the block. The order is: front, back, top, bottom, left, right.\n'probability': This is a numerical value between 0 and 1 that represents the chance of finding the block within its height range in the world.\n'properties': This is an object that includes the block's characteristics, such as if it's solid, its opacity, shine, if it's a fluid, and its durability.\nHere is a template for a 'blocks' array:\n\n[\n  {\n    \"name\": \"<block_name>\",\n    \"id\": \"<block_id>\",\n    \"min_height\": \"<min_height>\",\n    \"max_height\": \"<max_height>\",\n    \"materials\": [\"<material_id_front>\", \"<material_id_back>\", \"<material_id_top>\", \"<material_id_bottom>\", \"<material_id_left>\", \"<material_id_right>\"],\n    \"probability\": \"<probability_value>\",\n    \"properties\": { \n      \"solid\": <true_or_false>, \n      \"opaque\": <true_or_false>, \n      \"shining\": \"<shining_value_0_to_1>\", \n      \"fluid\": <true_or_false>, \n      \"durability\": \"<durability_value_1_to_100>\" \n    }\n  },\n  // add more block objects as needed\n]\nFill in these templates with appropriate values for each of these properties. Ensure that you follow a logical order for the geological layers and provide a range of different materials and blocks to create a rich and diverse game world.\n";
-
-// block materials (just colors for this demo)
-var textureURL = null;
-// Material colors
 
 const OLLAMA_CONFIG = {
   endpoint: 'https://341f48ced197.ngrok-free.app',
   completionPath: '/v1/completions',
   model: 'deepseek-r1:1.5b',
-  timeoutMs: 120 * 1000,
+  timeoutMs: 30 * 1000,
+  maxTokens: 2048,
 };
 
 const ollamaClient = axios.create({
@@ -32,110 +27,768 @@ const ollamaClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-export var materials = [];
-export var blocks = [];
-export var materialIds = [];
-// Register materials
-
-// do some Babylon.js stuff with the scene, materials, etc.
-
-export function init_texture(noa) {
-  
-  
-  materials = [
-    { name: "Bedrock", id: "bedrock", opaque : true, color: [0.196, 0.196, 0.196], texture: "Dark gray, rough and jagged surface" },
-    { name: "Stone", id: "stone", opaque : true, color: [0.471, 0.471, 0.471], texture: "Smooth gray surface with occasional darker flecks" },
-    { name: "Dirt", id: "dirt", opaque : true, color: [0.545, 0.271, 0.075], texture: "Brown, compacted soil with small pebbles" },
-    { name: "Grass", id: "grass",opaque : true, color: [0.196, 0.804, 0.196], texture: "Green grass blades covering a layer of soil" },
-    { name: "Water", id: "water", opaque : false, color: [0, 0, 1], texture: "Transparent, flowing liquid with a reflective surface" },
-    { name: "Oak Log", id: "log_top", opaque : true, color: [0.627, 0.322, 0.176], texture: " with tree rings" },
-    { name: "Oak Bark", id: "log_side", opaque : true, color: [0.627, 0.322, 0.176], texture: " vertical" },
-    { name: "Pumpkin Top", id: "pumpkin_top", opaque : true, color: [0.980, 0.627, 0.098], texture: "Orange surface with rough ridges and a stem" },
-    { name: "Pumpkin Bottom", id: "pumpkin_bottom", opaque : true, color: [0.980, 0.627, 0.098], texture: "Flat, smooth, and circular orange surface" },
-    { name: "Pumpkin Side", id: "pumpkin_side", opaque : true, color: [0.980, 0.627, 0.098], texture: "Rough, ridged, and segmented orange surface with vertical lines" },
-    { name: "Oak Leaves", id: "oak_leaves", opaque: false, color: [0.392, 0.706, 0.235], texture: "Cluster of green leaves with small branches and varying shades of green" }
-  ];
- 
-  blocks = [
-    { name: "Bedrock",id:1, min_height: -Infinity, max_height: -50, materials: ["bedrock","bedrock","bedrock","bedrock","bedrock","bedrock"], probability: 1, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 100} },
-    { name: "Stone",id: 2,  min_height: -50, max_height: 0, materials:[ "stone","stone","stone","stone","stone","stone"], probability: 0.9, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 50 } },
-    { name: "Dirt", id: 3, min_height: -5, max_height: 0, materials: ["dirt","dirt","dirt","dirt","dirt","dirt"], probability: 0.7, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 10 } },
-    { name: "Grass",id: 4, min_height: 0, max_height: 5, materials: ["dirt","dirt","grass","dirt","dirt","dirt"], probability: 0.9, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 5} },
-    { name: "Water",id: 5, min_height: -50, max_height: 5, materials:["water","water","water","water","water","water"], probability: 0.005, properties: { solid : false, opaque: false, shining: 0.2, fluid: true, durability: 0} },
-    { name: "Log",  id: 6, min_height: 0, max_height: -1, materials:["log_side","log_side","log_top","log_top","log_side","log_side"], probability: 0.005, properties: { solid : true, opaque: true, shining: 0, fluid: false, durability: 5} },
-    { name: "Oak Leaves", id: 7, min_height: 0, max_height: -1, materials: ["oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves", "oak_leaves"], probability: 0.005, properties: { solid: true, opaque: false, shining: 0, fluid: false, durability: 1 } },
-  ];
-
- /*blocks = [
-    {"name": "Bedrock", "min_height": -64, "max_height": -32, "materialIds": "bedrock", "probability": 0.8, "properties": { "transparency": 0, "shining": 0, "liquid": 0, "durability": 100, "color": [0.15, 0.15, 0.15], "texture": "Rough, gray stone with a few black speckles" }},
-    {"name": "Granite", "min_height": -32, "max_height": -16, "materialIds": "granite", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.5, "liquid": 0, "durability": 95, "color": [0.5, 0.5, 0.5], "texture": "Rough, dark gray texture interspersed with glints of shiny black speckles" }},
-    {"name": "Sandstone", "min_height": -16, "max_height": -8, "materialIds": "sandstone", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 85, "color": [0.9, 0.8, 0.45], "texture": "Smooth, light yellow-orange with occasional brown patches" }},
-    {"name": "Limestone", "min_height": -8, "max_height": -4, "materialIds": "limestone", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 80, "color": [0.75, 0.75, 0.75], "texture": "Light gray with occasional white and black striations" }},
-    {"name": "Clay", "min_height": -4, "max_height": 0, "materialIds": "clay", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 65, "color": [0.4, 0.4, 0.3], "texture": "Smooth, dark brown with occasional lighter brown patches" }},
-    {"name": "Silt", "min_height": -4, "max_height": 0, "materialIds": "silt", "probability": 0.6, "properties": { "transparency": 0, "shining": 0.2, "liquid": 0, "durability": 55, "color": [0.75, 0.7, 0.5], "texture": "Smooth, light grayish-brown with occasional yellow patches" }},
-    {"name": "Peat", "min_height": -4, "max_height": 0, "materialIds": "peat", "probability": 0.5, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 40, "color": [0.2, 0.15, 0.1], "texture": "Dry, dark brown with occasional light brown patches" }},
-    {"name": "Sand", "min_height": -4, "max_height": 0, "materialIds": "sand", "probability": 0.6, "properties": { "transparency": 0, "shining": 0.4, "liquid": 0, "durability": 70, "color": [0.8, 0.75, 0.6], "texture": "Grainy, light beige with occasional dark brown patches" }},
-    {"name": "Gravel", "min_height": -4, "max_height": 0, "materialIds": "gravel", "probability": 0.5, "properties": { "transparency": 0, "shining": 0.3, "liquid": 0, "durability": 75, "color": [0.45, 0.4, 0.35], "texture": "Rough, dark brown with occasional lighter brown patches" }},
-    {"name": "Soil", "min_height": -4, "max_height": 0, "materialIds": "soil", "probability": 0.7, "properties": { "transparency": 0, "shining": 0.2, "liquid": 0, "durability": 50, "color": [0.6, 0.5, 0.4], "texture": "Light brown with occasional dark patches" }},
-    {"name": "Grass", "min_height": 0, "max_height": 0, "materialIds": "grass", "probability": 0.8, "properties": { "transparency": 0, "shining": 0.1, "liquid": 0, "durability": 30, "color": [0.3, 0.5, 0.2], "texture": "Lush, light green with occasional yellow patches" }}
-  ]
- */
-  for (var material of materials) {
-    noa.registry.registerMaterial(material.id, material.color, null);
-    create_material(material, noa); 
-}
-
-
-
-for (var block of blocks) {
-   
-    
-    //materials[i].material = noa.registry.registerBlock(1.0+Number(i), { material: materials[i].materialIds, });
-    
-     noa.registry.registerBlock( 
-      block.id, { 
-        solid : block.properties.solid,
-        material: block.materials,
-        opaque:  block.properties.opaque,
-        fluid: block.properties.fluid,
-        fluidDensity: 0.1 ,
-        viscosity: 0.5 
-      });
-      console.log(block.materials);
-
-    //create_material(materials[i], noa); 
+ollamaClient.interceptors.request.use((config) => {
+  if (config && typeof config.data === 'object' && config.data !== null) {
+    if (config.data.max_tokens == null) {
+      config.data.max_tokens = OLLAMA_CONFIG.maxTokens;
+    }
   }
-  /*var scene = noa.rendering.getScene();
-  var mesh = createGrass([0,0,0], 10, 0.5, 0.7, 0.05, 0.07, scene);
-  console.log(mesh );
-  noa.registry.registerBlock(8, {
-  blockMesh: mesh,
-  opaque: true
-  
-});*/
+  return config;
+});
 
+export let materials = [];
+export let blocks = [];
+export let materialIds = {};
+export let lastBiome = null;
+let contentPrepared = false;
+let lastSeed = null;
+
+function reportWorldgen(message, level = 'info') {
+  if (!message) return;
+  const prefixed = `[worldgen] ${message}`;
+  if (level === 'warn') console.warn(prefixed);
+  else if (level === 'error') console.error(prefixed);
+  else console.log(prefixed);
+  logHud(prefixed, level);
 }
-  function create_material(material, noa ){
-    fetchMaterialRecipe(material)
-      .then((recipe) => {
-        const resolvedRecipe = applyMaterialHeuristics(
-          material,
-          recipe || createFallbackRecipe(material)
-        );
-        material.generatedRecipe = resolvedRecipe;
-        console.log('Material recipe', material.id, resolvedRecipe);
-        const tmat = buildProceduralMaterial(noa, material, resolvedRecipe);
-        noa.registry.registerMaterial(material.id, null, null, false, tmat);
-      })
-      .catch((error) => {
-        console.warn(`Falling back to flat color for material ${material.id}: ${error.message || error}`);
-        const fallbackRecipe = applyMaterialHeuristics(
-          material,
-          createFallbackRecipe(material)
-        );
-        const fallbackMaterial = buildProceduralMaterial(noa, material, fallbackRecipe);
-        noa.registry.registerMaterial(material.id, null, null, false, fallbackMaterial);
+
+export async function prepareWorldContent() {
+  if (contentPrepared) {
+    reportWorldgen('World content already prepared, reusing cached data.');
+    return;
+  }
+  const seed = Math.floor(Math.random() * 1e9);
+  lastSeed = seed;
+  reportWorldgen(`preparing procedural content (seed ${seed})`);
+  try {
+    const content = await generateProceduralContent(seed);
+    materials = content.materials;
+    blocks = content.blocks;
+    lastBiome = content.biome || null;
+    reportWorldgen(`Biome: ${lastBiome?.name || 'Unnamed'}`);
+  } catch (error) {
+    reportWorldgen(`primary content generation failed: ${error.message || error}. Using fallback set.`, 'warn');
+    const fallback = generateFallbackContent(seed);
+    materials = sanitizeMaterials(fallback.materials);
+    blocks = sanitizeBlocks(fallback.blocks, materials);
+    lastBiome = fallback.biome || null;
+  }
+  contentPrepared = true;
+}
+
+export async function init_texture(noa) {
+  if (!contentPrepared || !materials.length || !blocks.length) {
+    await prepareWorldContent();
+  }
+  materialIds = {};
+  reportWorldgen('Registering materials with engine.');
+  for (const material of materials) {
+    const numericId = await create_material(material, noa);
+    materialIds[material.id] = numericId;
+  }
+  reportWorldgen(`Registering ${blocks.length} block definitions.`);
+  for (const block of blocks) {
+    registerBlock(noa, block);
+  }
+
+  const biomeName = lastBiome && lastBiome.name ? lastBiome.name : 'unknown biome';
+  reportWorldgen(`ready: ${biomeName} (${materials.length} materials / ${blocks.length} blocks)`);
+}
+
+async function generateProceduralContent(seed) {
+  const biomeDraft = await generateBiomeConcept(seed);
+  const biomeCritique = await critiqueBiomeConcept(biomeDraft).catch(() => null);
+  const biomeFinal = biomeCritique
+    ? await refineBiomeConcept(biomeDraft, biomeCritique).catch(() => biomeDraft)
+    : biomeDraft;
+
+  reportWorldgen('Requesting block type lineup...');
+  const blockTypes = await generateBlockTypeList(biomeFinal, seed);
+  if (!blockTypes.length) {
+    throw new Error('No block types generated');
+  }
+  reportWorldgen(`Block types (${blockTypes.length}): ${blockTypes.map((t) => t.name).join(', ')}`);
+
+  const collectedBlocks = [];
+  const materialMap = new Map();
+
+  for (let i = 0; i < blockTypes.length; i++) {
+    const blockType = blockTypes[i];
+    reportWorldgen(`Detailing block ${i + 1}/${blockTypes.length}: ${blockType.name}`);
+    try {
+      const detail = await generateBlockDetail(blockType, biomeFinal, seed, i);
+      if (detail.block) {
+        collectedBlocks.push(detail.block);
+        reportWorldgen(`→ ${detail.block.name}: faces ${detail.block.materials.join(', ')}`);
+      }
+      (detail.materials || []).forEach((mat) => {
+        if (!mat || !mat.id) return;
+        const existed = materialMap.has(mat.id);
+        if (materialMap.has(mat.id)) return;
+        materialMap.set(mat.id, mat);
+        if (!existed) {
+          reportWorldgen(`   ↳ new material ${mat.id} (${mat.name})`);
+        }
       });
+    } catch (error) {
+      reportWorldgen(`Failed to build block ${blockType.name}: ${error.message || error}`, 'warn');
+    }
+  }
+
+  let materialList = Array.from(materialMap.values());
+  collectedBlocks.forEach((block) => {
+    block.materials.forEach((matId) => {
+      if (!materialMap.has(matId)) {
+        const placeholder = {
+          id: matId,
+          name: matId.replace(/_/g, ' '),
+          opaque: true,
+          color: [0.5, 0.5, 0.5],
+          texture: `${matId} fallback texture`,
+        };
+        materialMap.set(matId, placeholder);
+        reportWorldgen(`   ↳ added fallback material ${matId}`, 'warn');
+      }
+    });
+  });
+  materialList = Array.from(materialMap.values());
+  if (!collectedBlocks.length || !materialList.length) {
+    throw new Error('Block/material generation failed');
+  }
+
+  const materialsSanitized = sanitizeMaterials(materialList);
+  const blocksSanitized = sanitizeBlocks(collectedBlocks, materialsSanitized);
+
+  reportWorldgen(`Generated ${blocksSanitized.length} blocks with ${materialsSanitized.length} materials`);
+
+  return {
+    biome: biomeFinal.biome,
+    blocks: blocksSanitized,
+    materials: materialsSanitized,
+  };
+}
+
+async function generateBiomeConcept(seed) {
+  const prompt = [
+    'You are ARCHITECT-1, a visionary biome imagineer for a voxel survival game.',
+    `Random seed: ${seed}`,
+    'Invent a fresh biome concept. Reply as plain text with one key:value per line.',
+    'Use these keys: biome_name, biome_theme, biome_climate, world_summary, surface_layer, subsurface_layer, deep_layer, primary_tree, other_plants, fluids.',
+    'Provide exactly two feature lines formatted as feature: description.',
+    'Values must be single-line, no code fences, no extra commentary.',
+    'Example:',
+    'biome_name: Ember Tundra',
+    'feature: geothermal crevasses',
+    'feature: aurora skies',
+    '...continue with remaining keys...',
+  ].join('\n');
+
+  const text = await callOllamaPlain(prompt, { temperature: 0.65 });
+  return parseBiomeConceptText(text);
+}
+
+async function critiqueBiomeConcept(concept) {
+  const context = JSON.stringify(concept, null, 2);
+  const prompt = [
+    'You are CRITIC-ARCH, a seasoned worldbuilding consultant.',
+    'Review the biome concept below for coherence, originality, and gameplay viability.',
+    'Return plain text lines:',
+    'revise: yes/no',
+    'strength: ... (repeatable)',
+    'issue: ... (repeatable, optional)',
+    'revision_focus: ... (short summary)',
+    'Keep strings single-line, no extra commentary.',
+    '---',
+    context,
+  ].join('\n');
+  const text = await callOllamaPlain(prompt, { temperature: 0.4, silence: true });
+  return parseCritiqueText(text);
+}
+
+async function refineBiomeConcept(concept, critique) {
+  if (!critique || critique.revise === false) {
+    return concept;
+  }
+  const prompt = [
+    'You are ARCHITECT-1R, tasked with refining a biome concept based on critique.',
+    'Return key:value lines using the same format as the original biome response.',
+    'Focus on addressing the listed issues while preserving strengths.',
+    '--- Current Concept ---',
+    JSON.stringify(concept, null, 2),
+    '--- Critique ---',
+    JSON.stringify(critique, null, 2),
+  ].join('\n');
+  const text = await callOllamaPlain(prompt, { temperature: 0.6 });
+  return parseBiomeConceptText(text);
+}
+
+async function generateBlockTypeList(biome, seed) {
+  const prompts = [
+    [
+      'You are BLOCK-PLANNER, outlining block types for a voxel biome.',
+      `Random seed: ${seed}`,
+      'Produce 8-12 block concepts separated by lines containing only ---.',
+      'For each concept output plain key:value lines in this exact order:',
+      'block_type: Name',
+      'id_hint: identifier (optional, lowercase, no spaces)',
+      'role: short description (optional)',
+      'Do NOT output JSON, braces { }, brackets, quotation marks, or commentary.',
+      'Example block entry:',
+      'block_type: Basalt Shelf',
+      'id_hint: basalt_shelf',
+      'role: Rugged volcanic stone layer',
+      '---',
+      'Follow this pattern for every block.',
+      '--- Biome ---',
+      JSON.stringify(biome, null, 2),
+    ].join('\n'),
+    [
+      'You are BLOCK-PLANNER, outlining block types for a voxel biome.',
+      `Random seed: ${seed}`,
+      'Output ONLY blocks in this format with NO extra text:',
+      'block_type: ...',
+      'id_hint: ...',
+      'role: ...',
+      '---',
+      'Repeat 8-12 times. Absolutely no explanations, JSON, or descriptive prose.',
+      '--- Biome ---',
+      JSON.stringify(biome, null, 2),
+    ].join('\n'),
+    [
+      'List 8-12 block types for this voxel biome using the exact structure:',
+      'block_type: ...',
+      'id_hint: ...',
+      'role: ...',
+      '---',
+      'Never include other text.',
+      '--- Biome ---',
+      JSON.stringify(biome, null, 2),
+    ].join('\n'),
+  ];
+
+  for (let attempt = 0; attempt < prompts.length; attempt++) {
+    const prompt = prompts[attempt];
+    const text = await callOllamaPlain(prompt, { temperature: attempt === 0 ? 0.5 : 0.35 });
+    const list = parseBlockTypeList(text);
+    if (list.length) {
+      reportWorldgen(`Block planner attempt ${attempt + 1} produced ${list.length} types.`);
+      return list;
+    }
+    reportWorldgen(`Block planner attempt ${attempt + 1} failed. Snippet: "${text.slice(0, 140)}"`, 'warn');
+  }
+  return [];
+}
+
+async function generateBlockDetail(blockType, biome, seed, index) {
+  const prompt = [
+    'You are BLOCK-SMITH, defining the exact properties of a voxel block.',
+    `Random seed: ${seed + index}`,
+    'Provide key:value lines describing the block:',
+    'block_name, id_hint (optional), min_height, max_height, probability, materials (comma list of 6 ids), solid, opaque, shining, fluid, durability.',
+    'After block lines, add one line per material used in the form:',
+    'material material_id: name=...; opaque=...; color=r,g,b; texture=short description',
+    'Separate materials with ";" attributes as shown. No extra commentary.',
+    'Do NOT output JSON, braces, brackets, or quoted strings.',
+    '--- Block Type ---',
+    JSON.stringify(blockType, null, 2),
+    '--- Biome ---',
+    JSON.stringify(biome, null, 2),
+  ].join('\n');
+  const text = await callOllamaPlain(prompt, { temperature: 0.55 });
+  return parseBlockDetailText(text, blockType, index);
+}
+
+async function callOllamaPlain(prompt, { temperature = 0.7, silence = false } = {}) {
+  if (!silence) {
+    reportWorldgen('↳ ' + prompt.split('\n')[0]);
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OLLAMA_CONFIG.timeoutMs);
+  try {
+    const response = await ollamaClient.post(OLLAMA_CONFIG.completionPath, {
+      model: OLLAMA_CONFIG.model,
+      prompt,
+      temperature,
+      stream: false,
+      signal: controller.signal,
+    });
+    const rawText = extractTextFromCompletion(response.data);
+    const cleaned = normalizePlainText(rawText);
+    if (!cleaned.length) {
+      throw new Error('Empty response from Ollama');
+    }
+    return cleaned;
+  } catch (error) {
+    throw new Error(error.name === 'AbortError' ? 'LLM request timed out' : error.message || error);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function normalizePlainText(text) {
+  if (typeof text !== 'string') return '';
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, ' ');
+  cleaned = cleaned.replace(/<\/*think>/gi, ' ');
+  return cleaned
+    .replace(/\u0000/g, '')
+    .split('\n')
+    .map((line) => line.replace(/[\u0001-\u001F]/g, ' ').trim())
+    .filter((line) => line.length > 0)
+    .join('\n');
+}
+
+function splitLines(text) {
+  return text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+}
+
+function parseKeyValue(line) {
+  const idx = line.indexOf(':');
+  if (idx === -1) return null;
+  const key = line.slice(0, idx).trim().toLowerCase();
+  const value = line.slice(idx + 1).trim();
+  return { key, value };
+}
+
+function sanitizeIdentifier(value, fallback) {
+  const base = (value || fallback || '').toString().trim();
+  const sanitized = base.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+  if (!sanitized.length) return fallback || 'id';
+  return sanitized;
+}
+
+function parseBooleanValue(value, defaultValue = false) {
+  if (typeof value !== 'string') return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  if (['true', 'yes', 'y', '1'].includes(normalized)) return true;
+  if (['false', 'no', 'n', '0'].includes(normalized)) return false;
+  return defaultValue;
+}
+
+function parseNumberValue(value, defaultValue = 0) {
+  const num = Number.parseFloat(value);
+  return Number.isFinite(num) ? num : defaultValue;
+}
+
+function parseIntegerValue(value, defaultValue = 0) {
+  const num = Number.parseInt(value, 10);
+  return Number.isFinite(num) ? num : defaultValue;
+}
+
+function parseCommaList(value) {
+  if (typeof value !== 'string') return [];
+  return value
+    .split(/[,;]/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+}
+
+function parseBiomeConceptText(text) {
+  const lines = splitLines(text);
+  const data = {};
+  const features = [];
+  lines.forEach((line) => {
+    const kv = parseKeyValue(line);
+    if (!kv) return;
+    const { key, value } = kv;
+    if (key === 'feature') {
+      features.push(value);
+    } else {
+      data[key] = value;
+    }
+  });
+  if (!features.length) features.push('mysterious ambience');
+  const fluids = parseCommaList(data.fluids || '');
+  const otherPlants = parseCommaList(data.other_plants || '');
+  return {
+    biome: {
+      name: data.biome_name || 'Unnamed Biome',
+      theme: data.biome_theme || '',
+      climate: data.biome_climate || '',
+      notable_features: features,
+    },
+    world_summary: data.world_summary || '',
+    geology: {
+      surface: data.surface_layer || '',
+      subsurface: data.subsurface_layer || '',
+      deep: data.deep_layer || '',
+    },
+    flora: {
+      primary_tree: data.primary_tree || '',
+      other_plants: otherPlants,
+    },
+    fluids,
+  };
+}
+
+function parseCritiqueText(text) {
+  const lines = splitLines(text);
+  const critique = {
+    strengths: [],
+    issues: [],
+    revise: false,
+    revision_focus: '',
+  };
+  lines.forEach((line) => {
+    const kv = parseKeyValue(line);
+    if (!kv) return;
+    const { key, value } = kv;
+    if (key === 'strength') critique.strengths.push(value);
+    else if (key === 'issue') critique.issues.push(value);
+    else if (key === 'revise') critique.revise = parseBooleanValue(value, false);
+    else if (key === 'revision_focus') critique.revision_focus = value;
+  });
+  return critique;
+}
+
+function parseBlockTypeList(text) {
+  const results = [];
+  const lines = splitLines(text);
+  let current = null;
+  let blockIndex = 0;
+  const flushCurrent = () => {
+    if (current && current.name) {
+      const sanitizedId = sanitizeIdentifier(current.id || current.name, `block_${blockIndex + 1}`);
+      results.push({
+        name: current.name.trim(),
+        role: current.role || '',
+        id: sanitizedId,
+      });
+      blockIndex += 1;
+    }
+    current = null;
+  };
+
+  lines.forEach((line) => {
+    const dashWithName = line.match(/^---\s*(.+)$/);
+    if (dashWithName) {
+      flushCurrent();
+      current = {
+        name: dashWithName[1].trim(),
+        role: '',
+        id: dashWithName[1].trim(),
+      };
+      return;
+    }
+    if (/^---+$/.test(line)) {
+      flushCurrent();
+      return;
+    }
+    if (/^[\{\}]/.test(line) || /^["']/.test(line)) {
+      return;
+    }
+    const kv = parseKeyValue(line);
+    if (!kv) return;
+    const { key, value } = kv;
+    if (key === 'block_type' || key === 'name') {
+      flushCurrent();
+      current = { name: value, role: '', id: value };
+    } else {
+      if (!current) current = { name: '', role: '', id: '' };
+      if (key === 'role') current.role = value;
+      else if (key === 'id_hint' || key === 'id') current.id = value;
+      else if (key === 'description' && !current.role) current.role = value;
+    }
+  });
+  // handle lines without colon treated as names
+  if (lines.length && !results.length && (!current || !current.name)) {
+    const nameOnlyMatch = lines.find((ln) => !ln.includes(':') && ln.length > 0 && !/^---/.test(ln));
+    if (nameOnlyMatch) {
+      current = { name: nameOnlyMatch, role: '', id: nameOnlyMatch };
+    }
+  }
+  flushCurrent();
+  return results;
+}
+
+function parseMaterialLine(line) {
+  const match = line.match(/^material\s+([^:]+):\s*(.*)$/i);
+  if (!match) return null;
+  const rawId = match[1].trim();
+  const body = match[2] || '';
+  const attributes = body.split(';').map((part) => part.trim()).filter(Boolean);
+  const material = {
+    id: sanitizeIdentifier(rawId, rawId || 'material'),
+    name: rawId,
+    opaque: true,
+    color: [0.5, 0.5, 0.5],
+    texture: '',
+  };
+  attributes.forEach((attr) => {
+    const eqIdx = attr.indexOf('=');
+    if (eqIdx === -1) return;
+    const key = attr.slice(0, eqIdx).trim().toLowerCase();
+    const value = attr.slice(eqIdx + 1).trim();
+    if (key === 'name') material.name = value;
+    else if (key === 'opaque') material.opaque = parseBooleanValue(value, true);
+    else if (key === 'color') {
+      const list = parseCommaList(value);
+      while (list.length < 3) list.push('0.5');
+      material.color = list.slice(0, 3).map((c) => clamp01(parseNumberValue(c, 0.5)));
+    } else if (key === 'texture') material.texture = value;
+  });
+  return material;
+}
+
+function parseBlockDetailText(text, blockType, index) {
+  const lines = splitLines(text);
+  const map = {};
+  const materialDefs = [];
+  lines.forEach((line) => {
+    if (line.toLowerCase().startsWith('material ')) {
+      const mat = parseMaterialLine(line);
+      if (mat) materialDefs.push(mat);
+      return;
+    }
+    const kv = parseKeyValue(line);
+    if (!kv) return;
+    map[kv.key] = kv.value;
+  });
+
+  const name = map.block_name || map.name || blockType.name || `Block ${index + 1}`;
+  const numericId = parseIntegerValue(map.id || map.index, index + 1);
+  const materialIds = parseCommaList(map.materials || '').map((id, idx) => sanitizeIdentifier(id, `mat_${numericId}_${idx}`));
+  while (materialIds.length < 6) {
+    materialIds.push(materialIds.length ? materialIds[materialIds.length - 1] : 'stone');
+  }
+
+  const block = {
+    id: numericId,
+    name,
+    min_height: parseNumberValue(map.min_height, -64),
+    max_height: parseNumberValue(map.max_height, 32),
+    materials: materialIds.slice(0, 6),
+    probability: clampNumber(parseNumberValue(map.probability, 0.3), 0, 1),
+    properties: {
+      solid: parseBooleanValue(map.solid, true),
+      opaque: parseBooleanValue(map.opaque, true),
+      shining: clampNumber(parseNumberValue(map.shining, 0), 0, 1),
+      fluid: parseBooleanValue(map.fluid, false),
+      durability: Math.round(clampNumber(parseIntegerValue(map.durability, 30), 0, 100)),
+    },
+  };
+
+  return {
+    block,
+    materials: materialDefs,
+  };
+}
+
+function parseMaterialRecipeText(text) {
+  const lines = splitLines(text);
+  const map = {};
+  lines.forEach((line) => {
+    const kv = parseKeyValue(line);
+    if (!kv) return;
+    map[kv.key] = kv.value;
+  });
+  const paletteList = parseCommaList(map.palette || '').map((entry) => {
+    let hex = entry.trim().toLowerCase();
+    if (!hex.startsWith('#')) hex = `#${hex}`;
+    if (hex.length === 4) {
+      hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+    }
+    return hex;
+  });
+  while (paletteList.length < 3) {
+    paletteList.push('#888888');
+  }
+  return {
+    description: (map.description || '').trim(),
+    pattern: (map.pattern || '').trim().toLowerCase() || 'speckled',
+    accentProbability: clampNumber(parseNumberValue(map.accent_probability ?? map.accentprobability ?? 0.25, 0.25), 0, 0.8),
+    scale: Math.round(clampNumber(parseNumberValue(map.scale ?? 8, 8), 2, 32)),
+    palette: paletteList.slice(0, 5),
+  };
+}
+
+function generateFallbackContent(seed) {
+  reportWorldgen(`using deterministic fallback content for seed ${seed}`, 'warn');
+  return {
+    biome: {
+      name: 'Fallback Plains',
+      theme: 'Temperate grassland with shallow water pools',
+      climate: 'mild',
+      notable_features: ['rolling hills', 'patchy ponds'],
+    },
+    materials: [
+      { id: 'bedrock', name: 'Bedrock', opaque: true, color: [0.18, 0.18, 0.2], texture: 'Dark fractured stone with subtle blue glints' },
+      { id: 'stone', name: 'Stone', opaque: true, color: [0.5, 0.5, 0.5], texture: 'Gray granite speckled with lighter flecks' },
+      { id: 'dirt', name: 'Dirt', opaque: true, color: [0.45, 0.3, 0.18], texture: 'Packed brown loam with pebbles' },
+      { id: 'grass', name: 'Grass', opaque: true, color: [0.2, 0.72, 0.25], texture: 'Vibrant turf dotted with wild sprouts' },
+      { id: 'water', name: 'Water', opaque: false, color: [0.1, 0.35, 0.8], texture: 'Clear reflective surface with gentle ripples' },
+      { id: 'log_side', name: 'Oak Bark', opaque: true, color: [0.42, 0.28, 0.19], texture: 'Rough vertical bark ridges' },
+      { id: 'log_top', name: 'Oak Heartwood', opaque: true, color: [0.55, 0.36, 0.23], texture: 'Tree rings with amber sheen' },
+      { id: 'oak_leaves', name: 'Oak Leaves', opaque: false, color: [0.18, 0.6, 0.26], texture: 'Translucent leaf clusters in layered greens' },
+      { id: 'clay', name: 'Clay', opaque: true, color: [0.62, 0.38, 0.27], texture: 'Moist clay streaked with reddish veins' },
+      { id: 'gravel', name: 'Gravel', opaque: true, color: [0.45, 0.44, 0.42], texture: 'Packed pebbles in mixed grays' },
+    ],
+    blocks: [
+      { id: 1, name: 'Bedrock', min_height: -64, max_height: -48, materials: ['bedrock','bedrock','bedrock','bedrock','bedrock','bedrock'], probability: 1.0, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 100 } },
+      { id: 2, name: 'Stone', min_height: -48, max_height: -12, materials: ['stone','stone','stone','stone','stone','stone'], probability: 0.9, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 70 } },
+      { id: 3, name: 'Gravel Vein', min_height: -32, max_height: -8, materials: ['gravel','gravel','gravel','gravel','gravel','gravel'], probability: 0.25, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 35 } },
+      { id: 4, name: 'Clay Pocket', min_height: -20, max_height: -4, materials: ['clay','clay','clay','clay','clay','clay'], probability: 0.2, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 30 } },
+      { id: 5, name: 'Dirt', min_height: -6, max_height: 0, materials: ['dirt','dirt','dirt','dirt','dirt','dirt'], probability: 0.85, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 20 } },
+      { id: 6, name: 'Grass', min_height: 0, max_height: 4, materials: ['dirt','dirt','grass','dirt','dirt','dirt'], probability: 0.95, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 15 } },
+      { id: 7, name: 'Water', min_height: -4, max_height: 2, materials: ['water','water','water','water','water','water'], probability: 0.08, properties: { solid: false, opaque: false, shining: 0, fluid: true, durability: 0 } },
+      { id: 8, name: 'Oak Log', min_height: 1, max_height: 16, materials: ['log_side','log_side','log_top','log_top','log_side','log_side'], probability: 0.02, properties: { solid: true, opaque: true, shining: 0, fluid: false, durability: 45 } },
+      { id: 9, name: 'Oak Leaves', min_height: 3, max_height: 20, materials: ['oak_leaves','oak_leaves','oak_leaves','oak_leaves','oak_leaves','oak_leaves'], probability: 0.03, properties: { solid: true, opaque: false, shining: 0, fluid: false, durability: 10 } },
+    ],
+  };
+}
+
+function sanitizeMaterials(rawMaterials = []) {
+  const results = [];
+  const seen = new Set();
+  let fallbackIndex = 1;
+  for (const entry of rawMaterials) {
+    if (!entry) continue;
+    const rawId = (entry.id || entry.name || `mat_${fallbackIndex}`).toString().trim();
+    let id = rawId.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (!id.length) {
+      id = `mat_${fallbackIndex}`;
+    }
+    while (seen.has(id)) {
+      id = `${id}_${fallbackIndex++}`;
+    }
+    seen.add(id);
+    const name = entry.name ? entry.name.toString().trim() : id;
+    const color = sanitizeColor(entry.color);
+    const opaque = typeof entry.opaque === 'boolean' ? entry.opaque : !(id.includes('water') || id.includes('glass') || id.includes('ice'));
+    const texture = entry.texture && typeof entry.texture === 'string'
+      ? entry.texture.trim()
+      : `${name} texture`;
+    results.push({
+      id,
+      name,
+      opaque,
+      color,
+      texture,
+    });
+    fallbackIndex += 1;
+  }
+  if (!results.length) {
+    return sanitizeMaterials(generateFallbackContent(0).materials);
+  }
+  return results;
+}
+
+function sanitizeColor(value) {
+  if (Array.isArray(value) && value.length >= 3) {
+    const rgb = value.slice(0, 3).map((component) => clampNumber(Number(component), 0, 1));
+    if (rgb.every((component) => Number.isFinite(component))) {
+      return rgb;
+    }
+  }
+  return [0.5, 0.5, 0.5];
+}
+
+function sanitizeBlocks(rawBlocks = [], materialList = []) {
+  const materialIdsSet = new Set(materialList.map((mat) => mat.id));
+  const safeMaterialId = materialList.length ? materialList[0].id : 'bedrock';
+  const results = [];
+  const usedBlockIds = new Set();
+  let nextId = 1;
+
+  for (const entry of rawBlocks) {
+    if (!entry) continue;
+    let id = Number.parseInt(entry.id, 10);
+    if (!Number.isFinite(id) || id <= 0 || usedBlockIds.has(id)) {
+      while (usedBlockIds.has(nextId)) {
+        nextId += 1;
+      }
+      id = nextId++;
+    }
+    usedBlockIds.add(id);
+
+    const name = entry.name ? entry.name.toString().trim() : `Block ${id}`;
+    const minHeight = clampNumber(Number(entry.min_height ?? entry.minHeight ?? -64), -128, 64);
+    const maxHeight = clampNumber(Number(entry.max_height ?? entry.maxHeight ?? minHeight + 4), -128, 64);
+    const probability = clampNumber(Number(entry.probability ?? 0.3), 0, 1);
+
+    const faceMaterials = Array.isArray(entry.materials) ? entry.materials.slice(0, 6) : [];
+    while (faceMaterials.length < 6) {
+      faceMaterials.push(faceMaterials.length ? faceMaterials[faceMaterials.length - 1] : safeMaterialId);
+    }
+    const sanitizedFaces = faceMaterials.map((faceId) => (materialIdsSet.has(faceId) ? faceId : safeMaterialId));
+
+    const props = entry.properties || {};
+    const solid = typeof props.solid === 'boolean' ? props.solid : true;
+    const opaque = typeof props.opaque === 'boolean' ? props.opaque : solid;
+    const fluid = typeof props.fluid === 'boolean' ? props.fluid : false;
+    const shining = clampNumber(Number(props.shining ?? 0), 0, 1);
+    const durability = Math.round(clampNumber(Number(props.durability ?? 25), 0, 100));
+
+    results.push({
+      id,
+      name,
+      min_height: Math.min(minHeight, maxHeight),
+      max_height: Math.max(minHeight, maxHeight),
+      materials: sanitizedFaces,
+      probability,
+      properties: {
+        solid,
+        opaque,
+        fluid,
+        shining,
+        durability,
+      },
+    });
+  }
+
+  if (!results.length) {
+    return sanitizeBlocks(generateFallbackContent(0).blocks, materialList);
+  }
+
+  results.sort((a, b) => a.min_height - b.min_height || a.id - b.id);
+
+  return results;
+}
+
+function registerBlock(noa, block) {
+  const faceMaterialIds = block.materials.map((matId) => {
+    const resolved = materialIds[matId];
+    if (typeof resolved === 'number') return resolved;
+    const fallbackKey = materials.length ? materials[0].id : null;
+    return fallbackKey && typeof materialIds[fallbackKey] === 'number'
+      ? materialIds[fallbackKey]
+      : 1;
+  });
+
+  const options = {
+    material: faceMaterialIds,
+    solid: block.properties.solid,
+    opaque: block.properties.opaque,
+    fluid: block.properties.fluid,
+  };
+
+  if (block.properties.fluid) {
+    options.fluidDensity = 1.0;
+    options.viscosity = 0.5;
+  }
+
+  noa.registry.registerBlock(block.id, options);
+  reportWorldgen(`Registered block ${block.name} (#${block.id})`);
+}
+  async function create_material(material, noa ){
+    try {
+      const recipe = await fetchMaterialRecipe(material);
+      const resolvedRecipe = applyMaterialHeuristics(
+        material,
+        recipe || createFallbackRecipe(material)
+      );
+      material.generatedRecipe = resolvedRecipe;
+      reportWorldgen(`Material recipe ready for ${material.id}`);
+      const tmat = buildProceduralMaterial(noa, material, resolvedRecipe);
+      return noa.registry.registerMaterial(material.id, null, null, false, tmat);
+    } catch (error) {
+      console.warn(`Falling back to flat color for material ${material.id}: ${error.message || error}`);
+      const fallbackRecipe = applyMaterialHeuristics(
+        material,
+        createFallbackRecipe(material)
+      );
+      const fallbackMaterial = buildProceduralMaterial(noa, material, fallbackRecipe);
+      return noa.registry.registerMaterial(material.id, null, null, false, fallbackMaterial);
+    }
     }
 
     async function fetchMaterialRecipe(material) {
@@ -144,29 +797,17 @@ for (var block of blocks) {
         'You are designing procedural voxel textures for a survival crafting game.',
         `Material name: ${material.name}`,
         `Base color hint (hex): ${baseHex}`,
-        'Respond with compact JSON using this schema:',
-        '{',
-        '  "description": string,',
-        '  "palette": array of 3 hex colors (e.g. ["#a1b2c3","..."]),',
-        '  "pattern": one of ["speckled","strata","veins","mottled"],',
-        '  "accentProbability": number between 0 and 0.6,',
-        '  "scale": integer between 3 and 20',
-        '}',
-        'Return JSON only without code fences or extra commentary.',
+        'Respond using simple key:value lines:',
+        'description: short texture description (≤16 words)',
+        'pattern: speckled | strata | veins | mottled | wood | foliage | water',
+        'palette: #hex,#hex,#hex (comma separated, at least 3)',
+        'accent_probability: number between 0 and 0.6',
+        'scale: integer between 3 and 20',
+        'No braces, no JSON, no commentary.',
       ];
       try {
-        const response = await ollamaClient.post(
-          OLLAMA_CONFIG.completionPath,
-          {
-            model: OLLAMA_CONFIG.model,
-            prompt: promptParts.join('\n'),
-            stream: false,
-            temperature: 0.35,
-          }
-        );
-        const rawText = extractTextFromCompletion(response.data);
-        const parsed = extractJsonObject(rawText);
-        return parsed ? sanitizeRecipe(parsed) : null;
+        const response = await callOllamaPlain(promptParts.join('\n'), { temperature: 0.4, silence: true });
+        return parseMaterialRecipeText(response);
       } catch (err) {
         console.warn(`Unable to fetch procedural recipe for ${material.name}: ${err.message || err}`);
         return null;
@@ -184,28 +825,6 @@ for (var block of blocks) {
       }
       if (typeof data.completion === 'string') return data.completion;
       return '';
-    }
-
-    function extractJsonObject(text) {
-      if (typeof text !== 'string' || text.trim().length === 0) return null;
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) return null;
-      try {
-        return JSON.parse(match[0]);
-      } catch (error) {
-        console.warn(`Failed to parse recipe JSON: ${error.message || error}`);
-        return null;
-      }
-    }
-
-    function sanitizeRecipe(raw) {
-      const recipe = {};
-      recipe.description = typeof raw.description === 'string' ? raw.description.trim() : '';
-      recipe.pattern = typeof raw.pattern === 'string' ? raw.pattern.toLowerCase() : 'speckled';
-      recipe.accentProbability = clampNumber(Number(raw.accentProbability ?? 0.25), 0, 0.8);
-      recipe.scale = Math.round(clampNumber(Number(raw.scale ?? 6), 2, 32));
-      recipe.palette = Array.isArray(raw.palette) ? raw.palette.slice(0, 5) : [];
-      return recipe;
     }
 
     function buildProceduralMaterial(noa, material, recipe) {
@@ -578,187 +1197,3 @@ for (var block of blocks) {
     function frac(value) {
       return value - Math.floor(value);
     }
-
-    /*
-    const axios = require("axios");
-
-require("dotenv").config();
-
-const apiKey = process.env.OPENAI_API_KEY;
-
-const client = axios.create({
-  headers: {
-    Authorization: "Bearer " + apiKey,
-  },
-});
-
-const params = {
-  prompt: "How are you?",
-  model: "text-davinci-003",
-  max_tokens: 10,
-  temperature: 0,
-};
-
-client
-  .post("https://api.openai.com/v1/completions", params)
-  .then((result) => {
-    console.log(result.data.choices[0].text);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-    */
-  import { OpenAI } from "langchain/llms/openai";
-  import { BufferMemory } from "langchain/memory";
-  import { ConversationChain } from "langchain/chains";
-  import { SimpleSequentialChain, LLMChain } from "langchain/chains";
-  import {
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    PromptTemplate,
-    SystemMessagePromptTemplate,
-  } from "langchain/prompts";
-  import {  PipelinePromptTemplate } from "langchain/prompts";
-  
-  //export const run = async () => {
- 
-
-    export async function create_material_list( ){
-
-      
-const llm = new OpenAI({ openAIApiKey: "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",maxTokens:-1, modelName: "gpt-4"});
-const memory = new BufferMemory();
-// This is an LLMChain to write a synopsis given a title of a play.
-
-const template = `You are a game designer. Given the title of the voxel game world, it is your job to write a detailed description of that game world.
-
-Title: {title}
-Game Designer: This is a description of the above voxel game world:`;
-
-const promptTemplate = new PromptTemplate({
-  template,
-  inputVariables: ["title"],
-});
-
-const descriptionChain = new LLMChain({ llm, prompt: promptTemplate });
-const descriptionText = await descriptionChain.call({ title: "Post-apocalyptic Earth with mostly barren landscape" });
-
-console.log(descriptionText);
-
-const blocklistLLM = new OpenAI({ openAIApiKey: "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", maxTokens:-1});
-
-const blockListTemplate = `You are a voxel game block designer. Given the description of the voxel game world, it is your job to generate a complete list of geological based building blocks (like stone, lava, granit, etc) for that game world. Each block is an basic element of this world, based on geological proceses, just consider that it is a Minecraft like game. No complex structures.
-
-Voxel Game World Description:
-{description}
-Please format the response using a simple list of comma separated building blocks, like this: grass, stone, dirt
-
-Building blocks for the above voxel game world by a voxel game block designer:`;
-
-const blockListPromptTemplate = new PromptTemplate({
-  template: blockListTemplate,
-  inputVariables: ["description"],
-});
-
-const blockListChain = new LLMChain({
-  llm: blocklistLLM,
-  prompt: blockListPromptTemplate,
-});
-const BlockListResult = await blockListChain.call({description: descriptionText.text});
-console.log(BlockListResult);
-
-// Now that we have the building blocks, we generate the materials.
-const materialsLLM = new OpenAI({ openAIApiKey: "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",maxTokens:-1,modelName: "gpt-4"});
-    
-const materialsTemplate = `You are a voxel game material designer. Given the list of building blocks, it is your job to generate a list of materials for each block from the list.
-
-The complete List of Building Blocks:
-{buildingblocks}
-Please format the response using the following template for the materials.
-This JSON format represents a complete list of materials for the previous blocks, each expressed as a dictionary with five keys:
-
-name (string): This field represents the common name of the material.
-id (string): This field acts as a unique identifier for the material in the game.
-opaque (boolean): This field indicates if the material is opaque (true) or not (false).
-color (array of 3 numbers): This field represents the color of the material, described as RGB values, where each value is a decimal between 0 and 1.
-texture (string): This field is a 10 words description of the appearance and feel of the material's surface.
-Materials for the above building blocks by a voxel game material designer:`;
-
-const materialsPromptTemplate = new PromptTemplate({
-  template: materialsTemplate,
-  inputVariables: ["buildingblocks"],
-});
-
-console.log(materialsPromptTemplate);
-const materialsChain = new LLMChain({
-  llm: materialsLLM,
-  prompt: materialsPromptTemplate,
-});
-const MaterialsResult = await materialsChain.call({buildingblocks: BlockListResult.text});
-console.log(MaterialsResult);
-// An LLMChain to generate a list of building blocks (materials like grass, stone, etc.) based on the game world description.
-const blocksLLM = new OpenAI({ openAIApiKey: "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", maxTokens:-1,modelName: "gpt-4"});
-
-const blocksTemplate = PromptTemplate.fromTemplate(`You are a voxel game block designer. Given the description of the voxel game world, it is your job to generate a JSON with the blocks (like grass, stone, etc.) using the material list for that game world.
-
-Voxel Game World Description:
-{description}
-Game Block List for the above voxel game world by a voxel game block designer:
-{blocklist}
-Material list for the above blocks:
-{materialist}
-Please format the response using the following template for the building blocks,This JSON format defines blocks for a voxel-based game:
-name: Block's name, like Bedrock.
-id: Unique identifier for the block.
-min_height & max_height: The vertical range where the block can occur in the range -Infinity to 0, based on geological and worldbuilding logic.
-materials: Array containing the material ids for each side of the block like materials:["log_side","log_side","log_top","log_top","log_side","log_side"], the materials need to be from the material list from above.
-probability: The chance for this block to naturally appear within its height range in the range 0 to 1.
-properties: Further attributes of the block, including:
-solid: Indicates if the block is solid.
-opaque: Indicates if the block is see-through.
-shining: Describes how much light the block emits.
-fluid: Shows if the block is fluid-like.
-durability: Describes the block's resistance to damage in a 0-100 range.
-
-Building blocks for the above voxel game world by a voxel game block designer:`);
-
-
-
-
-/*const blocksPromptTemplate = new PromptTemplate({
-  template: formattedPrompt,
-  
-});*/
-
-const blocksChain = new LLMChain({
-  llm: blocksLLM,
-  prompt: blocksTemplate ,
-});
-const blocksresult = await blocksChain .call({description : descriptionText.text, blocklist: BlockListResult.text, materialist: MaterialsResult.text });
-console.log(blocksresult.text);
-
-
-
-
-
-/*const res1 = await chain.call({ 
-  input:formattedPrompt});
-  console.log(res1);
-      /*const res1 = await chain.call({ 
-        input: "Generate please two JavaScript arrays of unique materials and blocks for a voxel-based game world. Start with the 'materials' array, which should include 11 unique materials. Each material object in the array will have the following properties:'name': This is a string that represents the common name of the material.'id': This is a string that serves as a unique identifier for the material. Typically, it matches the material's name. 'opaque': This is a boolean that indicates whether the material is opaque or not. 'color': This is an array of three numerical values between 0 and 1. They represent the Red, Green, and Blue color values of the material.\n'texture': This string describes the material's texture in a visually detailed manner.\nHere is a template for a 'materials' array:\n\n[\n  {\n    \"name\": \"<material_name>\",\n    \"id\": \"<material_id>\",\n    \"opaque\": <true_or_false>,\n    \"color\": [\"<red_value_0_to_1>\", \"<green_value_0_to_1>\", \"<blue_value_0_to_1>\"],\n    \"texture\": \"<detailed_texture_description>\"\n  },\n  // add more material objects as needed\n]\nNext, create the 'blocks' array, which should include various blocks of these materials. Each block object in the array will have the following properties:\n\n'name': This is a string that represents the common name of the block.\n'id': This is a string that serves as a unique identifier for the block. Typically, it matches the block's name.\n'min_height' and 'max_height': These are numerical values that represent the minimum and maximum depths at which the block can be found in the game world. The values range from -64 (deepest) to 0 (surface). You should assign these values based on real geological layers.\n'materials': This is an array of material identifiers which represents the different sides of the block. The order is: front, back, top, bottom, left, right.\n'probability': This is a numerical value between 0 and 1 that represents the chance of finding the block within its height range in the world.\n'properties': This is an object that includes the block's characteristics, such as if it's solid, its opacity, shine, if it's a fluid, and its durability.\nHere is a template for a 'blocks' array:\n\n[\n  {\n    \"name\": \"<block_name>\",\n    \"id\": \"<block_id>\",\n    \"min_height\": \"<min_height>\",\n    \"max_height\": \"<max_height>\",\n    \"materials\": [\"<material_id_front>\", \"<material_id_back>\", \"<material_id_top>\", \"<material_id_bottom>\", \"<material_id_left>\", \"<material_id_right>\"],\n    \"probability\": \"<probability_value>\",\n    \"properties\": { \n      \"solid\": <true_or_false>, \n      \"opaque\": <true_or_false>, \n      \"shining\": \"<shining_value_0_to_1>\", \n      \"fluid\": <true_or_false>, \n      \"durability\": \"<durability_value_1_to_100>\" \n    }\n  },\n  // add more block objects as needed\n]\nFill in these templates with appropriate values for each of these properties. Ensure that you follow a logical order for the geological layers and provide a range of different materials and blocks to create a rich and diverse game world.\n Do not add anything." });
-      console.log(res1);
-      const template = "What is a good name for a company that makes {product}?";
-      const promptA = new PromptTemplate({ template, inputVariables: ["product"] });
-    
-      // We can use the `format` method to format the template with the given input values.
-      const responseA = await promptA.format({ product: "colorful socks" });
-      console.log({ responseA });
-      const promptB = PromptTemplate.fromTemplate(
-        "What is a good name for a company that makes {product}?"
-      );
-      const responseB = await promptB.format({ product: "colorful socks" });
-      console.log({ responseB });*/
-     
-  
-      }
-     

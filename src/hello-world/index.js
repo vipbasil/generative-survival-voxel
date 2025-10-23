@@ -2,11 +2,10 @@
 
 // Engine options object, and engine instantiation:
 import { Engine } from 'noa-engine'
-import {blocks, init_texture} from './generation'
+import {blocks, init_texture, prepareWorldContent} from './generation'
 import {initWorldGen} from './world'
 import {initPlayerMesh} from './player'
-import {create_material_list} from './generation'
-import {generateLSystemString,create_voxel,parseLSystem, lSystemRules,createGrass} from './flora'
+import { initHud } from './hud'
 //explain      
 var opts = {
     debug: true,
@@ -20,37 +19,19 @@ var opts = {
     fluidDrag: 0.4,
     fluidDensity: 2.0,
     minBounceImpulse: .5
-  
+
 }
+await prepareWorldContent();
+
 var noa = new Engine(opts)
-//const resizer = new Resizer();
 
-init_texture(noa);
+initHud();
 
+await init_texture(noa);
 
 initWorldGen(noa, blocks);
 
-
 initPlayerMesh(noa);
-create_material_list();
 
-var generatedTreeString = generateLSystemString(lSystemRules, 4);
-  //console.log(generatedTreeString);
-  setTimeout(function () {
-    parseLSystem([-15,5,0],generatedTreeString, create_voxel, noa);
-   generatedTreeString = generateLSystemString(lSystemRules, 4);
-   parseLSystem([15,5,0],generatedTreeString, create_voxel, noa);
-   generatedTreeString = generateLSystemString(lSystemRules, 4);
-  parseLSystem([0,5,15],generatedTreeString, create_voxel, noa);
-    
- 
-create_voxel(7,7,7, 8, noa);
-create_voxel(7,7,6, 3, noa);
-}, 1000)
- 
-// Generate grass clumps
-
-
-
-
+noa.entities.setPosition(noa.playerEntity, [0, 24, 0]);
 

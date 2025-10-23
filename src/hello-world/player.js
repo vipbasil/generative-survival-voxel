@@ -46,7 +46,12 @@ noa.inputs.down.on('fire', function () {
 noa.inputs.down.on('alt-fire', function () {
     if (noa.targetedBlock) {
         var pos = noa.targetedBlock.adjacent
-        noa.setBlock(materialIds['grass'], pos[0], pos[1], pos[2])
+        var grassId = materialIds['grass']
+        if (grassId === undefined) {
+            var firstMaterial = Object.values(materialIds)[0]
+            grassId = (typeof firstMaterial === 'number') ? firstMaterial : 1
+        }
+        noa.setBlock(grassId, pos[0], pos[1], pos[2])
     }
 })
 
